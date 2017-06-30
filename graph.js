@@ -12,5 +12,15 @@ var Graph = {
         Graph.ctx = Graph.canvas.getContext("2d");
         Graph.ctx.fillStyle = '#000000';
         Graph.ctx.fillRect(0, 0, Graph.WIDTH, Graph.HEIGHT);
-    }
-}
+    },
+
+    render : function(){},//рендеровка графика(очистка всего поля и отрисовка заного)
+
+    MS_PER_PIXEL : 1000,
+
+    UNITS_PER_PIXEL : 10,
+
+    START_MS : 1498000000000,
+
+    START_UNITS : 0
+};
