@@ -20,40 +20,50 @@ var Graph = {
 
     init : function(){
         Graph.canvas = document.getElementsByTagName('canvas')[0];
+        Graph.getDimensions();
+        Graph.ctx = Graph.canvas.getContext("2d");
+        Graph.render();
+        Graph.resize();
+    },
+
+    //функция получающая данные о размере экрана, и назначает размер холста
+    getDimensions : function () {
         Graph.HEIGHT = document.body.clientHeight;
         Graph.WIDTH = document.body.clientWidth;
         Graph.canvas.height = Graph.HEIGHT;
         Graph.canvas.width = Graph.WIDTH;
-        Graph.ctx = Graph.canvas.getContext("2d");
-        Graph.render(); //инициализация отрисовки графика
-        Graph.resize(); //функция для отслеживания изменения размров экрана
     },
 
+    //функция для отслеживания изменения размров экрана
     resize : function () {
         setTimeout(function(){
             var timerResize = "first";
             window.onresize = function(){
-                if(timerResize !== "first") clearTimeout(timerResize);
-
+                if(timerResize !== "first")
+                    clearTimeout(timerResize);
                 timerResize = setTimeout(function(){
-                    Graph.init();
+                    Graph.getDimensions();
+                    Graph.render();
                 },20)
             }
         },200);
     },
 
-    createCanvas : function () {
-        Graph.ctx.fillStyle = '#000000';
-        Graph.ctx.fillRect(0, 0, Graph.WIDTH, Graph.HEIGHT);
-    },
-
-    render : function(){ //рендеровка графика(очистка всего поля и отрисовка заного)
-        Graph.createCanvas();
+    //рендеровка графика(очистка всего поля и отрисовка заного)
+    render : function(){
+        Graph.resetCanvas();
         Graph.drawAxes();
         Graph.drawMarks();
         Graph.drawGrid();
     },
 
+    //заливает весь золст черным
+    resetCanvas : function () {
+        Graph.ctx.fillStyle = '#000000';
+        Graph.ctx.fillRect(0, 0, Graph.WIDTH, Graph.HEIGHT);
+    },
+
+    //отрисовка меток на осях
     drawMarks : function () {
         //метки на оси ОХ
         var cur_pos = Graph.PX_PER_POINT;
@@ -82,6 +92,7 @@ var Graph = {
         Graph.ctx.fill();
     },
 
+    //отрисовка стрелочек
     drawGrid : function () {
         var cur_pos = Graph.PX_PER_POINT;
         Graph.ctx.lineWidth = 0.5;
@@ -106,51 +117,51 @@ var Graph = {
         Graph.ctx.stroke();
     },
 
+    //отрисовка координатных прямых
     drawAxes : function () {
+        var realX0 = Graph.realX(0), realY0 = Graph.realY(0);
         Graph.ctx.strokeStyle = '#FFFFFF';
         Graph.ctx.fillStyle = '#FFFFFF';
         Graph.ctx.lineWidth = 2;
+        Graph.ctx.beginPath();
 
         //отрисовка OX и OY
-        Graph.ctx.beginPath();
-        Graph.ctx.moveTo(Graph.WIDTH - 50, Graph.realY(0));
-        Graph.ctx.lineTo(Graph.realX(0), Graph.realY(0));
-        Graph.ctx.lineTo(Graph.realX(0), 50);
-        Graph.ctx.moveTo(Graph.realX(0), 50);
-        Graph.ctx.stroke();
+        Graph.ctx.moveTo(Graph.WIDTH - 50, realY0);
+        Graph.ctx.lineTo(realX0, realY0);
+        Graph.ctx.lineTo(realX0, 50);
+        Graph.ctx.moveTo(realX0, 50);
 
         //отрисовка стрелочки на OX
-        Graph.ctx.beginPath();
-        Graph.ctx.moveTo(Graph.realX(0), 50);
+        Graph.ctx.moveTo(realX0, 50);
         Graph.ctx.lineTo(Graph.realX(3), 56);
         Graph.ctx.lineTo(Graph.realX(-3), 56);
-        Graph.ctx.lineTo(Graph.realX(0), 50);
-        Graph.ctx.stroke();
-        Graph.ctx.fill();
+        Graph.ctx.lineTo(realX0, 50);
 
         //отрисовка стрелочки на OY
-        Graph.ctx.beginPath();
-        Graph.ctx.moveTo(Graph.WIDTH - 50, Graph.realY(0));
+        Graph.ctx.moveTo(Graph.WIDTH - 50, realY0);
         Graph.ctx.lineTo(Graph.WIDTH - 56, Graph.realY(-3));
         Graph.ctx.lineTo(Graph.WIDTH - 56, Graph.realY(3));
-        Graph.ctx.lineTo(Graph.WIDTH - 50, Graph.realY(0));
+        Graph.ctx.lineTo(Graph.WIDTH - 50, realY0);
         Graph.ctx.stroke();
-        Graph.ctx.fill();
     },
 
-    realX : function (x) { //возращает позицию пикселей в координатаъ canvas
+    //возращает позицию пикселей в координатаъ canvas
+    realX : function (x) {
         return x + 50;
     },
 
-    realY : function (y) { //возращает позицию пикселей в координатаъ canvas
+    //возращает позицию пикселей в координатаъ canvas
+    realY : function (y) {
         return Graph.HEIGHT - 50 - y;
     },
 
-    tsToX : function (ts) { //переводит метку времени в координату по X
+    //переводит метку времени в координату по X
+    tsToX : function (ts) {
         return Graph.realX((ts-Graph.START_MS)/1000);
     },
 
-    unitsToY : function (units) { //переводит значение по OY в координаты на Y
+    //переводит значение по OY в координаты на Y
+    unitsToY : function (units) {
         return Graph.realY(units/10);
     }
 };
