@@ -21,9 +21,10 @@ var Graph = {
     init : function(){
         Graph.canvas = document.getElementsByTagName('canvas')[0];
         Graph.getDimensions();
-        Graph.ctx = Graph.canvas.getContext("2d");
+        Graph.ctx = Graph.canvas.getContext('2d');
         Graph.render();
         Graph.resize();
+        window.addEventListener('resize', Graph.resize);
     },
 
     //функция получающая данные о размере экрана, и назначает размер холста
@@ -36,17 +37,10 @@ var Graph = {
 
     //функция для отслеживания изменения размров экрана
     resize : function () {
-        setTimeout(function(){
-            var timerResize = "first";
-            window.onresize = function(){
-                if(timerResize !== "first")
-                    clearTimeout(timerResize);
-                timerResize = setTimeout(function(){
-                    Graph.getDimensions();
-                    Graph.render();
-                },20)
-            }
-        },200);
+        timerResize = setTimeout(function(){
+            Graph.getDimensions();
+            Graph.render();
+        },20)
     },
 
     //рендеровка графика(очистка всего поля и отрисовка заного)
@@ -57,7 +51,7 @@ var Graph = {
         Graph.drawGrid();
     },
 
-    //заливает весь золст черным
+    //заливает весь холст черным
     resetCanvas : function () {
         Graph.ctx.fillStyle = '#000000';
         Graph.ctx.fillRect(0, 0, Graph.WIDTH, Graph.HEIGHT);
@@ -143,6 +137,10 @@ var Graph = {
         Graph.ctx.lineTo(Graph.WIDTH - 56, Graph.realY(3));
         Graph.ctx.lineTo(Graph.WIDTH - 50, realY0);
         Graph.ctx.stroke();
+    },
+
+    buildLine : function (d, start) {
+
     },
 
     //возращает позицию пикселей в координатаъ canvas
