@@ -5,7 +5,10 @@ var Data = {
     },
 
     getDataFor: function(start, duration, f) {
-
+        f({
+            x: Data.arrayX,
+            y: Data.arrayY
+        });
     },
 
     sortData: function(data) {
