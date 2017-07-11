@@ -1,17 +1,46 @@
 var Data = {
 
-    f: function(d) {
-        Graph.buildLine(d, start);
+    init : function () {
+        //Data.generatePoints(Data.modifyArrayX(Data.arrayX), Data.arrayY);
     },
 
+    //массив объектов для текущего графика ({x: x, y: y})
+    POINTS : [],
+
+
+    //подгрузка данных
     getDataFor: function(start, duration, f) {
 
+        f({
+            x: Int16Array
+            ,y: Int16Array
+        }, Graph.START_MS);
+        //console.log("1::graph");
     },
 
-    sortData: function(data) {
-        Data.fakeData.sort(function(a, b) {
-            return a - b;
+    //сортировка данных по времени
+    sortData: function(d) {
+        d.sort(function(a, b) {
+            return a.x - b.x;
         });
+    },
+
+    //метот для работы с координатами
+    modifyArrayX: function(d) {
+        for(var i = 0; i < d.length; i++)
+            d[i] -= Graph.START_MS;
+        return d;
+    },
+
+    //генерация массива объектов данных
+    generatePoints: function(x, y) {
+        var N = x.length;
+        for (var i = 0; i < N; i++) {
+            Data.POINTS[i] = {
+                x: x[i],
+                y: y[i]
+            };
+        }
     },
 
     arrayX: [

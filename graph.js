@@ -23,7 +23,6 @@ var Graph = {
         Graph.getDimensions();
         Graph.ctx = Graph.canvas.getContext('2d');
         Graph.render();
-        Graph.resize();
         window.addEventListener('resize', Graph.resize);
     },
 
@@ -49,12 +48,30 @@ var Graph = {
         Graph.drawAxes();
         Graph.drawMarks();
         Graph.drawGrid();
+        Data.getDataFor(this.START_MS, this.WIDTH*this.MS_PER_PIXEL, Graph.buildLine);
     },
 
     //заливает весь холст черным
     resetCanvas : function () {
         Graph.ctx.fillStyle = '#000000';
         Graph.ctx.fillRect(0, 0, Graph.WIDTH, Graph.HEIGHT);
+        //console.log("clear");
+    },
+
+    //построение диаграммы
+    buildLine : function (d, start) {
+        //console.log(d);
+        Graph.ctx.strokeStyle = '#FFFFFF';
+        Graph.ctx.lineWidth = 2;
+        Graph.ctx.beginPath();
+        //console.log("start");
+        Graph.ctx.moveTo(Graph.realX(0), Graph.realY(0));
+        for(var i = 0; i < d.length; i++){
+            //console.log("11111");
+            Graph.ctx.lineTo(Graph.tsToX(d[i].x), Graph.unitsToY(d[i].y));
+        }
+        //console.log("cancel");
+        Graph.ctx.stroke();
     },
 
     //отрисовка меток на осях
@@ -70,12 +87,12 @@ var Graph = {
         Graph.ctx.stroke();
 
         //метки на оси OY
-        cur_pos = Graph.PX_PER_POINT;
+        cur_pos = Graph.UNITS_PER_PIXEL;
         Graph.ctx.beginPath();
         while (cur_pos < Graph.HEIGHT - 106){
             Graph.ctx.moveTo(Graph.realX(-3), Graph.realY(cur_pos));
             Graph.ctx.lineTo(Graph.realX(3), Graph.realY(cur_pos));
-            cur_pos += Graph.PX_PER_POINT;
+            cur_pos += Graph.UNITS_PER_PIXEL;
         }
         Graph.ctx.stroke();
 
@@ -101,12 +118,12 @@ var Graph = {
         Graph.ctx.stroke();
 
         //отрисовка по OY
-        cur_pos = Graph.PX_PER_POINT;
+        cur_pos = Graph.UNITS_PER_PIXEL;
         Graph.ctx.beginPath();
         while (cur_pos < Graph.HEIGHT - 100){
             Graph.ctx.moveTo(Graph.realX(0), Graph.realY(cur_pos));
             Graph.ctx.lineTo(Graph.WIDTH - 50, Graph.realY(cur_pos));
-            cur_pos += Graph.PX_PER_POINT;
+            cur_pos += Graph.UNITS_PER_PIXEL;
         }
         Graph.ctx.stroke();
     },
@@ -139,10 +156,6 @@ var Graph = {
         Graph.ctx.stroke();
     },
 
-    buildLine : function (d, start) {
-
-    },
-
     //возращает позицию пикселей в координатаъ canvas
     realX : function (x) {
         return x + 50;
@@ -155,7 +168,7 @@ var Graph = {
 
     //переводит метку времени в координату по X
     tsToX : function (ts) {
-        return Graph.realX((ts-Graph.START_MS)/1000);
+        return Graph.realX(ts/1000);
     },
 
     //переводит значение по OY в координаты на Y
