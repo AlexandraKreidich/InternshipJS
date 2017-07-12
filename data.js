@@ -10,12 +10,19 @@ var Data = {
 
     //подгрузка данных
     getDataFor: function(start, duration, f) {
+<<<<<<< HEAD
 
         f({
             x: Int16Array
             ,y: Int16Array
         }, Graph.START_MS);
         //console.log("1::graph");
+=======
+        f({
+            x: Data.arrayX,
+            y: Data.arrayY
+        });
+>>>>>>> origin/master
     },
 
     //сортировка данных по времени
