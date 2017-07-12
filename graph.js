@@ -8,6 +8,8 @@ var Graph = {
 
     canvas : null,
 
+    OX_MS : 0,
+
     PX_PER_POINT : 40, //расстояние между двумя соседними точками на осях
 
     MS_PER_PIXEL : 1000, //масштаб оси ОХ
@@ -32,6 +34,7 @@ var Graph = {
         Graph.WIDTH = document.body.clientWidth;
         Graph.canvas.height = Graph.HEIGHT;
         Graph.canvas.width = Graph.WIDTH;
+        Graph.OX_MS = (Graph.WIDTH - 100)*Graph.MS_PER_PIXEL;
     },
 
     //функция для отслеживания изменения размров экрана
@@ -48,7 +51,7 @@ var Graph = {
         Graph.drawAxes();
         Graph.drawMarks();
         Graph.drawGrid();
-        Data.getDataFor(this.START_MS, this.WIDTH*this.MS_PER_PIXEL, Graph.buildLine);
+        Graph.test();
     },
 
     //заливает весь холст черным
@@ -60,15 +63,17 @@ var Graph = {
 
     //построение диаграммы
     buildLine : function (d, start) {
-        //console.log(d);
-        Graph.ctx.strokeStyle = '#FFFFFF';
+        //console.log(d, start);
+
+        Graph.ctx.strokeStyle = '#FF576A';
         Graph.ctx.lineWidth = 2;
         Graph.ctx.beginPath();
         //console.log("start");
-        Graph.ctx.moveTo(Graph.realX(0), Graph.realY(0));
-        for(var i = 0; i < d.length; i++){
-            //console.log("11111");
-            Graph.ctx.lineTo(Graph.tsToX(d[i].x), Graph.unitsToY(d[i].y));
+        //Graph.ctx.moveTo(Graph.realX(0), Graph.realY(0));
+        Graph.ctx.moveTo(Graph.tsToX(d.x[0]), Graph.unitsToY(d.y[0]));
+        for(var i = 1; i < d.x.length; i++){
+            //console.log("go");
+            Graph.ctx.lineTo(Graph.tsToX(d.x[i]), Graph.unitsToY(d.y[i]));
         }
         //console.log("cancel");
         Graph.ctx.stroke();
@@ -78,6 +83,7 @@ var Graph = {
     drawMarks : function () {
         //метки на оси ОХ
         var cur_pos = Graph.PX_PER_POINT;
+        var ctx = Graph.ctx;
         Graph.ctx.beginPath();
         while (Graph.realX(cur_pos) < Graph.WIDTH - 56){
             Graph.ctx.moveTo(Graph.realX(cur_pos), Graph.realY(3));
@@ -156,6 +162,14 @@ var Graph = {
         Graph.ctx.stroke();
     },
 
+    // NE PONYATNO
+    test : function () {
+        //this.START_MS 1498000000000
+        //
+        console.log((this.WIDTH-156)*this.MS_PER_PIXEL);
+        Data.getDataFor(this.START_MS, (this.WIDTH-100)*this.MS_PER_PIXEL, Graph.buildLine);
+    },
+
     //возращает позицию пикселей в координатаъ canvas
     realX : function (x) {
         return x + 50;
@@ -168,7 +182,7 @@ var Graph = {
 
     //переводит метку времени в координату по X
     tsToX : function (ts) {
-        return Graph.realX(ts/1000);
+        return Graph.realX(ts/Graph.MS_PER_PIXEL);
     },
 
     //переводит значение по OY в координаты на Y

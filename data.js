@@ -1,45 +1,44 @@
 var Data = {
 
-    init : function () {
-        //Data.generatePoints(Data.modifyArrayX(Data.arrayX), Data.arrayY);
-    },
-
-    //массив объектов для текущего графика ({x: x, y: y})
-    POINTS : [],
-
+    //объект массивов данных
+    points : null,
 
     //подгрузка данных
     getDataFor: function(start, duration, f) {
-        f({
-            x: Int16Array
-            ,y: Int16Array
-        }, Graph.START_MS);
-        //console.log("1::graph");
+        var arrayX = [],
+            arrayY = [],
+            end = start + duration,
+            i = 0;
+
+        var l = Data.arrayX.length;
+        for(var j = 0; j < l; j++){
+            if(Data.arrayX[j] >= start && Data.arrayX[j] <= end) {
+                arrayX.push(Data.arrayX[j] - start);
+                arrayY.push(Data.arrayY[j]);
+                //console.log(2);
+            }
+        }
+
+        var x = new Int32Array(arrayX),
+            y = new Int32Array(arrayY);
+
+        Data.points = {x : x, y : y};
+
+        f({x : x, y : y}, start);
     },
 
-    //сортировка данных по времени
-    sortData: function(d) {
-        d.sort(function(a, b) {
-            return a.x - b.x;
-        });
-    },
+    // //сортировка данных по времени
+    // sortData: function(d) {
+    //     d.sort(function(a, b) {
+    //         return a.x - b.x;
+    //     });
+    // },
 
     //метот для работы с координатами
     modifyArrayX: function(d) {
         for(var i = 0; i < d.length; i++)
-            d[i] -= Graph.START_MS;
+            d[i] -= 0;
         return d;
-    },
-
-    //генерация массива объектов данных
-    generatePoints: function(x, y) {
-        var N = x.length;
-        for (var i = 0; i < N; i++) {
-            Data.POINTS[i] = {
-                x: x[i],
-                y: y[i]
-            };
-        }
     },
 
     arrayX: [
@@ -88,4 +87,3 @@ var Data = {
     ]
 
 };
-//сделать массив [{x:13215613,y:46132},...] отсортированные по x
