@@ -1,12 +1,12 @@
 var Graph = {
 
-    WIDTH : 0,
+    WIDTH : 0, //ширина экрана пользователя
 
-    HEIGHT : 0,
+    HEIGHT : 0, //высота экрана пользователя
 
-    ctx : null,
+    ctx : null, //контекст холста
 
-    canvas : null,
+    canvas : null, //холст
 
     OX_MS : 0, //ось ОХ в миллисекундах
 
@@ -52,6 +52,21 @@ var Graph = {
         Graph.drawMarks();
         Graph.drawGrid();
         Graph.test();
+        Graph.fillTop();
+    },
+
+    // NE PONYATNO (вызов функций отрисовки графика и меток)
+    test : function () {
+        //this.START_MS 1498000000000
+        //console.log((this.WIDTH-156)*this.MS_PER_PIXEL);
+        Data.getDataFor(this.START_MS, Graph.OX_MS, Graph.buildLine);
+        Data.getDataFor(this.START_MS, Graph.OX_MS, Graph.drawData);
+    },
+
+    //заливает верхнюю часть холста что бы график не вылазил за границы
+    fillTop : function (){
+        Graph.ctx.fillStyle = '#000000';
+        Graph.ctx.fillRect(0, 0, Graph.WIDTH, 48);
     },
 
     //заливает весь холст черным
@@ -64,19 +79,19 @@ var Graph = {
     //построение диаграммы
     buildLine : function (d, start) {
         //console.log(d, start);
-        var l = d.x.length;
-        Graph.ctx.strokeStyle = '#ff83fd';
-        Graph.ctx.lineWidth = 2;
-        Graph.ctx.beginPath();
+        var l = d.x.length, ctx = Graph.ctx;
+        ctx.strokeStyle = '#00feff';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
         //console.log("start");
         //Graph.ctx.moveTo(Graph.realX(0), Graph.realY(0));
-        Graph.ctx.moveTo(Graph.tsToX(d.x[0]), Graph.unitsToY(d.y[0]));
+        ctx.moveTo(Graph.tsToX(d.x[0]), Graph.unitsToY(d.y[0]));
         for(var i = 1; i < l; i++){
             //console.log("go");
-            Graph.ctx.lineTo(Graph.tsToX(d.x[i]), Graph.unitsToY(d.y[i]));
+            ctx.lineTo(Graph.tsToX(d.x[i]), Graph.unitsToY(d.y[i]));
         }
         //console.log("cancel");
-        Graph.ctx.stroke();
+        ctx.stroke();
     },
 
     //отрисовка меток на осях
@@ -87,96 +102,151 @@ var Graph = {
             width = Graph.WIDTH - 56,
             realY3 = Graph.realY(3),
             realYm3 = Graph.realY(-3);
-        Graph.ctx.beginPath();
+        ctx.beginPath();
         while (Graph.realX(cur_pos) < width){
-            Graph.ctx.moveTo(Graph.realX(cur_pos), realY3);
-            Graph.ctx.lineTo(Graph.realX(cur_pos), realYm3);
+            ctx.moveTo(Graph.realX(cur_pos), realY3);
+            ctx.lineTo(Graph.realX(cur_pos), realYm3);
             cur_pos += Graph.PX_PER_POINT;
         }
-        Graph.ctx.stroke();
+        ctx.stroke();
 
         //метки на оси OY
         var height = Graph.HEIGHT - 106,
             realX3 = Graph.realX(3),
             realXm3 = Graph.realX(-3);
-        cur_pos = Graph.UNITS_PER_PIXEL;
-        Graph.ctx.beginPath();
+        cur_pos = Graph.PX_PER_POINT;
+        ctx.beginPath();
         while (cur_pos < height){
-            Graph.ctx.moveTo(realXm3, Graph.realY(cur_pos));
-            Graph.ctx.lineTo(realX3, Graph.realY(cur_pos));
-            cur_pos += Graph.UNITS_PER_PIXEL;
+            ctx.moveTo(realXm3, Graph.realY(cur_pos));
+            ctx.lineTo(realX3, Graph.realY(cur_pos));
+            cur_pos += Graph.PX_PER_POINT;
         }
-        Graph.ctx.stroke();
+        ctx.stroke();
 
         //кружочек в (0,0)
-        Graph.ctx.beginPath();
-        Graph.ctx.moveTo(Graph.realX(0), Graph.realY(0));
-        Graph.ctx.arc(Graph.realX(0), Graph.realY(0), 4, 0, 2*Math.PI);
-        Graph.ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(Graph.realX(0), Graph.realY(0));
+        ctx.arc(Graph.realX(0), Graph.realY(0), 4, 0, 2*Math.PI);
+        ctx.fill();
     },
 
     //отрисовка стрелочек
     drawGrid : function () {
-        var cur_pos = Graph.PX_PER_POINT;
-        Graph.ctx.lineWidth = 0.5;
+        var cur_pos = Graph.PX_PER_POINT,
+            ctx = Graph.ctx,
+            height = Graph.HEIGHT - 100,
+            width = Graph.WIDTH - 50,
+            realY0 = Graph.realY(0),
+            realX0 = Graph.realX(0);
+        ctx.lineWidth = 0.5;
 
         //отрисовка по ОХ
-        var width = Graph.WIDTH - 50,
-            realY0 = Graph.realY(0);
-        Graph.ctx.beginPath();
+        ctx.beginPath();
         while (Graph.realX(cur_pos) < width){
-            Graph.ctx.moveTo(Graph.realX(cur_pos), realY0);
-            Graph.ctx.lineTo(Graph.realX(cur_pos), 50);
+            ctx.moveTo(Graph.realX(cur_pos), realY0);
+            ctx.lineTo(Graph.realX(cur_pos), 50);
             cur_pos += Graph.PX_PER_POINT;
         }
-        Graph.ctx.stroke();
+        ctx.stroke();
 
         //отрисовка по OY
-        var height = Graph.HEIGHT - 100,
-            realX0 = Graph.realX(0);
-        cur_pos = Graph.UNITS_PER_PIXEL;
-        Graph.ctx.beginPath();
+        cur_pos = Graph.PX_PER_POINT;
+        ctx.beginPath();
         while (cur_pos < height){
-            Graph.ctx.moveTo(realX0, Graph.realY(cur_pos));
-            Graph.ctx.lineTo(width, Graph.realY(cur_pos));
-            cur_pos += Graph.UNITS_PER_PIXEL;
+            ctx.moveTo(realX0, Graph.realY(cur_pos));
+            ctx.lineTo(width, Graph.realY(cur_pos));
+            cur_pos += Graph.PX_PER_POINT;
         }
-        Graph.ctx.stroke();
+        ctx.stroke();
     },
 
     //отрисовка координатных прямых
     drawAxes : function () {
-        var realX0 = Graph.realX(0), realY0 = Graph.realY(0);
-        Graph.ctx.strokeStyle = '#FFFFFF';
-        Graph.ctx.fillStyle = '#FFFFFF';
-        Graph.ctx.lineWidth = 2;
-        Graph.ctx.beginPath();
+        var realX0 = Graph.realX(0), realY0 = Graph.realY(0),
+            ctx = Graph.ctx;
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
 
         //отрисовка OX и OY
-        Graph.ctx.moveTo(Graph.WIDTH - 50, realY0);
-        Graph.ctx.lineTo(realX0, realY0);
-        Graph.ctx.lineTo(realX0, 50);
-        Graph.ctx.moveTo(realX0, 50);
+        ctx.moveTo(Graph.WIDTH - 50, realY0);
+        ctx.lineTo(realX0, realY0);
+        ctx.lineTo(realX0, 50);
+        ctx.moveTo(realX0, 50);
 
         //отрисовка стрелочки на OX
-        Graph.ctx.moveTo(realX0, 50);
-        Graph.ctx.lineTo(Graph.realX(3), 56);
-        Graph.ctx.lineTo(Graph.realX(-3), 56);
-        Graph.ctx.lineTo(realX0, 50);
+        ctx.moveTo(realX0, 50);
+        ctx.lineTo(Graph.realX(3), 56);
+        ctx.lineTo(Graph.realX(-3), 56);
+        ctx.lineTo(realX0, 50);
 
         //отрисовка стрелочки на OY
-        Graph.ctx.moveTo(Graph.WIDTH - 50, realY0);
-        Graph.ctx.lineTo(Graph.WIDTH - 56, Graph.realY(-3));
-        Graph.ctx.lineTo(Graph.WIDTH - 56, Graph.realY(3));
-        Graph.ctx.lineTo(Graph.WIDTH - 50, realY0);
-        Graph.ctx.stroke();
+        ctx.moveTo(Graph.WIDTH - 50, realY0);
+        ctx.lineTo(Graph.WIDTH - 56, Graph.realY(-3));
+        ctx.lineTo(Graph.WIDTH - 56, Graph.realY(3));
+        ctx.lineTo(Graph.WIDTH - 50, realY0);
+        ctx.stroke();
     },
 
-    // NE PONYATNO
-    test : function () {
-        //this.START_MS 1498000000000
-        //console.log((this.WIDTH-156)*this.MS_PER_PIXEL);
-        Data.getDataFor(this.START_MS, Graph.OX_MS, Graph.buildLine);
+    //отрисовка меток времени и значений
+    drawData : function (d, start) {
+        var ctx = Graph.ctx,
+            stepX = 5 * Graph.PX_PER_POINT,
+            stepY = 2 * Graph.PX_PER_POINT,
+            cur_pos = 0,
+            width = Graph.WIDTH - 56,
+            height = Graph.HEIGHT - 106,
+            realYm18 = Graph.realY(-18),
+            realYm36 = Graph.realY(-36),
+            realXm8 = Graph.realX(-8),
+            unY = Graph.UNITS_PER_PIXEL;
+
+        //отрисовка меток времени
+        ctx.font = '13px Arial';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'center';
+        while (Graph.realX(cur_pos) < width) {
+            ctx.fillText(Graph.tsToData(Graph.MS_PER_PIXEL * cur_pos + start), Graph.realX(cur_pos), realYm18);
+            ctx.fillText(Graph.tsToTime(Graph.MS_PER_PIXEL * cur_pos + start), Graph.realX(cur_pos), realYm36);
+            cur_pos += stepX;
+        }
+
+        //отрисовка значений
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        cur_pos = stepY;
+        while (Graph.realX(cur_pos) < height) {
+            ctx.fillText(cur_pos * unY, realXm8, Graph.realY(cur_pos));
+            cur_pos += stepY;
+        }
+    },
+
+    //перевод метки времени в формат ГГ-ММ-ДД
+    tsToData : function (ts) {
+        var fullData = new Date(ts),
+            year = fullData.getFullYear(),
+            month = fullData.getMonth() + 1,
+            day = fullData.getDate();
+
+        if(month < 10)  month = '0' + month;
+        if(day < 10)    day = '0' + day;
+
+        return year + '-' + month + '-' + day;
+    },
+
+    //перевод метки времени в формат ЧЧ:ММ:СС
+    tsToTime : function (ts) {
+        var fullData = new Date(ts),
+            hours = fullData.getHours(),
+            minutes = fullData.getMinutes(),
+            seconds = fullData.getSeconds();
+
+        if(hours < 10)   hours = '0' + hours;
+        if(minutes < 10) minutes = '0' + minutes;
+        if(seconds < 10) seconds = '0' + seconds;
+
+        return hours + ':' + minutes + ':' + seconds;
     },
 
     //возращает позицию пикселей в координатаъ canvas
