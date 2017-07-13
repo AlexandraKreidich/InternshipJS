@@ -1,18 +1,18 @@
 var Data = {
 
     //объект массивов данных
-    points : null,
+    points: null,
 
     //подгрузка данных
     getDataFor: function(start, duration, f) {
         var arrayX = [],
             arrayY = [],
-            end = start + duration,
-            i = 0;
+            end = start + duration;
 
         var l = Data.arrayX.length;
-        for(var j = 0; j < l; j++){
-            if(Data.arrayX[j] >= start && Data.arrayX[j] <= end) {
+
+        for (var j = 0; j < l; j++) {
+            if (Data.arrayX[j] >= start && Data.arrayX[j] <= end) {
                 arrayX.push(Data.arrayX[j] - start);
                 arrayY.push(Data.arrayY[j]);
                 //console.log(2);
@@ -22,9 +22,15 @@ var Data = {
         var x = new Int32Array(arrayX),
             y = new Int32Array(arrayY);
 
-        Data.points = {x : x, y : y};
+        Data.points = {
+            x: x,
+            y: y
+        };
 
-        f({x : x, y : y}, start);
+        f(Data.modifyArrayX({
+            x: x,
+            y: y
+        }, start), start);
     },
 
     // //сортировка данных по времени
@@ -32,12 +38,15 @@ var Data = {
     //     d.sort(function(a, b) {
     //         return a.x - b.x;
     //     });
-    // },
+    // },1
 
     //метот для работы с координатами
-    modifyArrayX: function(d) {
-        for(var i = 0; i < d.length; i++)
-            d[i] -= 0;
+    modifyArrayX: function(d, start) {
+
+        var l = d.length;
+
+        for (var i = 0; i < l; i++)
+            d[i] -= start;
         return d;
     },
 

@@ -71,7 +71,8 @@ var Graph = {
         //console.log("start");
         //Graph.ctx.moveTo(Graph.realX(0), Graph.realY(0));
         Graph.ctx.moveTo(Graph.tsToX(d.x[0]), Graph.unitsToY(d.y[0]));
-        for(var i = 1; i < d.x.length; i++){
+        var l = d.x.length;
+        for(var i = 1; i < l; i++){
             //console.log("go");
             Graph.ctx.lineTo(Graph.tsToX(d.x[i]), Graph.unitsToY(d.y[i]));
         }
