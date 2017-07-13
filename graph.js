@@ -52,7 +52,7 @@ var Graph = {
         Graph.drawMarks();
         Graph.drawGrid();
         Graph.test();
-        Graph.fillTop();
+        setTimeout(Graph.fillTop, 5);//????
     },
 
     // NE PONYATNO (вызов функций отрисовки графика и меток)
@@ -63,10 +63,13 @@ var Graph = {
         Data.getDataFor(this.START_MS, Graph.OX_MS, Graph.drawData);
     },
 
-    //заливает верхнюю часть холста что бы график не вылазил за границы
+    //заливает верхнюю часть холста что бы график не вылазил за границы????
     fillTop : function (){
+        //console.log('start');
         Graph.ctx.fillStyle = '#000000';
-        Graph.ctx.fillRect(0, 0, Graph.WIDTH, 48);
+        Graph.ctx.fillRect(0, 0, Graph.WIDTH, 49);
+        //console.log('end');
+        //console.log('_________');
     },
 
     //заливает весь холст черным
@@ -201,10 +204,10 @@ var Graph = {
             realYm36 = Graph.realY(-36),
             realXm8 = Graph.realX(-8),
             unY = Graph.UNITS_PER_PIXEL;
-
-        //отрисовка меток времени
         ctx.font = '13px Arial';
         ctx.fillStyle = '#FFFFFF';
+
+        //отрисовка меток времени
         ctx.textAlign = 'center';
         while (Graph.realX(cur_pos) < width) {
             ctx.fillText(Graph.tsToData(Graph.MS_PER_PIXEL * cur_pos + start), Graph.realX(cur_pos), realYm18);
