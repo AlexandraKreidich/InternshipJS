@@ -1,36 +1,38 @@
 var Data = {
 
-    //подгрузка данных
-    getDataFor : function(start, duration, f) {
-        var points = null;
-        Data.request.getData('data.csv').then(function(response) {
-            points = response;
-            var arrayX = [],
-                arrayY = [],
-                end = start + duration,
-                l = points.x.length;
-
-            for (var i = 0; i < l; i++) {
-                if (points.x[i] >= start && points.x[i] <= end) {
-                    arrayX.push(points.x[i] - start);
-                    arrayY.push(points.y[i]);
-                    //console.log(2);
-                }
-            }
-
-            var x = new Int32Array(arrayX),
-                y = new Int32Array(arrayY);
-
-            f({
-                x: x,
-                y: y
-            }, start);
-
+//подгрузка данных
+    getDataFor: function(start, duration, f) {
+        Data.Request.getData('data.csv').then(function(response){
+            Data.processData(response, start, duration, f);
         });
     },
 
-    request : {
-        get : function(url) {
+    processData: function(data, start, duration, f) {
+
+        var arrayX = [],
+            arrayY = [],
+            end = start + duration,
+            l = data.x.length;
+
+        for (var i = 0; i < l; i++) {
+            if (data.x[i] >= start && data.x[i] <= end) {
+                arrayX.push(data.x[i] - start);
+                arrayY.push(data.y[i]);
+            }
+        }
+
+        var x = new Int32Array(arrayX),
+            y = new Int32Array(arrayY);
+
+        f({
+            x: x,
+            y: y
+        }, start);
+
+    },
+
+    Request: {
+        get: function(url) {
             return new Promise(function(resolve, reject) {
 
                 var req = new XMLHttpRequest();
@@ -53,14 +55,14 @@ var Data = {
             });
         },
 
-        //после отправки url получает просто текст из файла и отдаёт на обработку в следующую функцию
-        getData : function(url) {
-            return Data.request.get(url).then(Data.request.parseData);
+//после отправки url получает просто текст из файла и отдаёт на обработку в следующую функцию
+        getData: function(url) {
+            return Data.Request.get(url).then(Data.Request.parseData);
         },
 
-        //разбирает на два массива
-        parseData : function(data) {
-            //console.log(data);
+//разбирает на два массива
+        parseData: function(data) {
+//console.log(data);
             var arr = data.split('\n');
             var l = arr.length - 1;
             var arrayX = [],
@@ -71,8 +73,8 @@ var Data = {
                 arrayX.push(Number(tmp[0]));
                 arrayY.push(Number(tmp[1]));
             }
-            //console.log(arrayY);
-            //console.log(arrayX);
+//console.log(arrayY);
+//console.log(arrayX);
 
             return {
                 x: arrayX,

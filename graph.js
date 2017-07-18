@@ -8,6 +8,8 @@ var Graph = {
 
     canvas : null, //холст
 
+    MARGIN : 50, //отступ по краям графика
+
     OX_MS : 0, //ось ОХ в миллисекундах
 
     PX_PER_POINT : 40, //расстояние между двумя соседними точками на осях
@@ -34,7 +36,7 @@ var Graph = {
         Graph.WIDTH = document.body.clientWidth;
         Graph.canvas.height = Graph.HEIGHT;
         Graph.canvas.width = Graph.WIDTH;
-        Graph.OX_MS = (Graph.WIDTH - 100)*Graph.MS_PER_PIXEL;
+        Graph.OX_MS = (Graph.WIDTH - 2*Graph.MARGIN)*Graph.MS_PER_PIXEL;
     },
 
     //функция для отслеживания изменения размров экрана
@@ -42,7 +44,7 @@ var Graph = {
         timerResize = setTimeout(function(){
             Graph.getDimensions();
             Graph.render();
-        },20)
+        }, 20)
     },
 
     //рендеровка графика(очистка всего поля и отрисовка заного)
@@ -52,7 +54,6 @@ var Graph = {
         Graph.drawMarks();
         Graph.drawGrid();
         Graph.test();
-        setTimeout(Graph.fillTop, 5);//????
     },
 
     // NE PONYATNO (вызов функций отрисовки графика и меток)
@@ -67,7 +68,7 @@ var Graph = {
     fillTop : function (){
         //console.log('start');
         Graph.ctx.fillStyle = '#000000';
-        Graph.ctx.fillRect(0, 0, Graph.WIDTH, 49);
+        Graph.ctx.fillRect(0, 0, Graph.WIDTH, Graph.MARGIN - 1);
         //console.log('end');
         //console.log('_________');
     },
@@ -83,7 +84,7 @@ var Graph = {
     buildLine : function (d, start) {
         //console.log(d, start);
         var l = d.x.length, ctx = Graph.ctx;
-        ctx.strokeStyle = '#00feff';
+        ctx.strokeStyle = '#ffae7a';
         ctx.lineWidth = 1;
         ctx.beginPath();
         //console.log("start");
@@ -95,6 +96,7 @@ var Graph = {
         }
         //console.log("cancel");
         ctx.stroke();
+        Graph.fillTop();
     },
 
     //отрисовка меток на осях
@@ -102,7 +104,7 @@ var Graph = {
         //метки на оси ОХ
         var cur_pos = Graph.PX_PER_POINT,
             ctx = Graph.ctx,
-            width = Graph.WIDTH - 56,
+            width = Graph.WIDTH - Graph.MARGIN + 6,
             realY3 = Graph.realY(3),
             realYm3 = Graph.realY(-3);
         ctx.beginPath();
@@ -114,7 +116,7 @@ var Graph = {
         ctx.stroke();
 
         //метки на оси OY
-        var height = Graph.HEIGHT - 106,
+        var height = Graph.HEIGHT - 2*Graph.MARGIN + 6,
             realX3 = Graph.realX(3),
             realXm3 = Graph.realX(-3);
         cur_pos = Graph.PX_PER_POINT;
@@ -137,8 +139,9 @@ var Graph = {
     drawGrid : function () {
         var cur_pos = Graph.PX_PER_POINT,
             ctx = Graph.ctx,
-            height = Graph.HEIGHT - 100,
-            width = Graph.WIDTH - 50,
+            margin = Graph.MARGIN,
+            height = Graph.HEIGHT - 2*margin,
+            width = Graph.WIDTH - margin,
             realY0 = Graph.realY(0),
             realX0 = Graph.realX(0);
         ctx.lineWidth = 0.5;
@@ -147,7 +150,7 @@ var Graph = {
         ctx.beginPath();
         while (Graph.realX(cur_pos) < width){
             ctx.moveTo(Graph.realX(cur_pos), realY0);
-            ctx.lineTo(Graph.realX(cur_pos), 50);
+            ctx.lineTo(Graph.realX(cur_pos), margin);
             cur_pos += Graph.PX_PER_POINT;
         }
         ctx.stroke();
@@ -166,29 +169,30 @@ var Graph = {
     //отрисовка координатных прямых
     drawAxes : function () {
         var realX0 = Graph.realX(0), realY0 = Graph.realY(0),
-            ctx = Graph.ctx;
+            ctx = Graph.ctx,
+            margin = Graph.MARGIN;
         ctx.strokeStyle = '#FFFFFF';
         ctx.fillStyle = '#FFFFFF';
         ctx.lineWidth = 2;
         ctx.beginPath();
 
         //отрисовка OX и OY
-        ctx.moveTo(Graph.WIDTH - 50, realY0);
+        ctx.moveTo(Graph.WIDTH - margin, realY0);
         ctx.lineTo(realX0, realY0);
-        ctx.lineTo(realX0, 50);
-        ctx.moveTo(realX0, 50);
+        ctx.lineTo(realX0, margin);
+        ctx.moveTo(realX0, margin);
 
         //отрисовка стрелочки на OX
-        ctx.moveTo(realX0, 50);
-        ctx.lineTo(Graph.realX(3), 56);
-        ctx.lineTo(Graph.realX(-3), 56);
-        ctx.lineTo(realX0, 50);
+        ctx.moveTo(realX0, margin);
+        ctx.lineTo(Graph.realX(3), margin + 6);
+        ctx.lineTo(Graph.realX(-3), margin + 6);
+        ctx.lineTo(realX0, margin);
 
         //отрисовка стрелочки на OY
-        ctx.moveTo(Graph.WIDTH - 50, realY0);
-        ctx.lineTo(Graph.WIDTH - 56, Graph.realY(-3));
-        ctx.lineTo(Graph.WIDTH - 56, Graph.realY(3));
-        ctx.lineTo(Graph.WIDTH - 50, realY0);
+        ctx.moveTo(Graph.WIDTH - margin, realY0);
+        ctx.lineTo(Graph.WIDTH - margin + 6, Graph.realY(-3));
+        ctx.lineTo(Graph.WIDTH - margin + 6, Graph.realY(3));
+        ctx.lineTo(Graph.WIDTH - margin, realY0);
         ctx.stroke();
     },
 
@@ -198,8 +202,8 @@ var Graph = {
             stepX = 5 * Graph.PX_PER_POINT,
             stepY = 2 * Graph.PX_PER_POINT,
             cur_pos = 0,
-            width = Graph.WIDTH - 56,
-            height = Graph.HEIGHT - 106,
+            width = Graph.WIDTH - Graph.MARGIN + 6,
+            height = Graph.HEIGHT - 2*Graph.MARGIN + 6,
             realYm18 = Graph.realY(-18),
             realYm36 = Graph.realY(-36),
             realXm8 = Graph.realX(-8),
@@ -254,12 +258,12 @@ var Graph = {
 
     //возращает позицию пикселей в координатаъ canvas
     realX : function (x) {
-        return x + 50;
+        return x + Graph.MARGIN;
     },
 
     //возращает позицию пикселей в координатаъ canvas
     realY : function (y) {
-        return Graph.HEIGHT - 50 - y;
+        return Graph.HEIGHT - Graph.MARGIN - y;
     },
 
     //переводит метку времени в координату по X
