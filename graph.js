@@ -77,7 +77,7 @@ var Graph = {
     buildLine : function (d, start) {
         //console.log(d, start);
         var l = d.x.length, ctx = Graph.ctx;
-        ctx.strokeStyle = '#ed4fdf';
+        ctx.strokeStyle = '#5ced00';
         ctx.lineWidth = 1;
         ctx.beginPath();
         //console.log("start");
@@ -103,9 +103,6 @@ var Graph = {
             width = Graph.WIDTH - Graph.MARGIN - 6,
             realY3 = Graph.realY(3),
             realYm3 = Graph.realY(-3);
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.fillStyle = '#FFFFFF';
-        ctx.lineWidth = 2;
 
         //метки на оси ОХ
         ctx.beginPath();
@@ -145,15 +142,15 @@ var Graph = {
             height = Graph.HEIGHT - 2*margin,
             width = Graph.WIDTH - margin,
             realY0 = Graph.realY(0),
-            realX0 = Graph.realX(0);
+            realX0 = Graph.realX(0),
+            step = Graph.PX_PER_POINT;
         ctx.lineWidth = 0.5;
-
         //отрисовка по ОХ
         ctx.beginPath();
         while (Graph.realX(cur_pos) < width){
             ctx.moveTo(Graph.realX(cur_pos), realY0);
             ctx.lineTo(Graph.realX(cur_pos), margin);
-            cur_pos += Graph.PX_PER_POINT;
+            cur_pos += step;
         }
         ctx.stroke();
 
@@ -163,7 +160,7 @@ var Graph = {
         while (cur_pos < height){
             ctx.moveTo(realX0, Graph.realY(cur_pos));
             ctx.lineTo(width, Graph.realY(cur_pos));
-            cur_pos += Graph.PX_PER_POINT;
+            cur_pos += step;
         }
         ctx.stroke();
     },
@@ -175,7 +172,7 @@ var Graph = {
 
     //вычисление первого отступа метки по OY
     calculateSectionsOnY : function () {
-        return (Graph.START_UNITS%(Graph.UNITS_PER_PIXEL*Graph.PX_PER_POINT))/Graph.UNITS_PER_PIXEL;
+        return Math.abs((Graph.START_UNITS%(Graph.UNITS_PER_PIXEL*Graph.PX_PER_POINT))/Graph.UNITS_PER_PIXEL);
     },
 
     //отрисовка координатных прямых
@@ -220,15 +217,16 @@ var Graph = {
             realYm18 = Graph.realY(-18),
             realYm36 = Graph.realY(-36),
             realXm8 = Graph.realX(-8),
-            unY = Graph.UNITS_PER_PIXEL;
+            unY = Graph.UNITS_PER_PIXEL,
+            msX = Graph.MS_PER_PIXEL;
         ctx.font = '13px Arial';
         ctx.fillStyle = '#FFFFFF';
 
         //отрисовка меток времени
         ctx.textAlign = 'center';
         while (Graph.realX(cur_pos) < width) {
-            ctx.fillText(Data.tsToData(Graph.MS_PER_PIXEL * cur_pos + start), Graph.realX(cur_pos), realYm18);
-            ctx.fillText(Data.tsToTime(Graph.MS_PER_PIXEL * cur_pos + start), Graph.realX(cur_pos), realYm36);
+            ctx.fillText(Data.tsToData(msX * cur_pos + start), Graph.realX(cur_pos), realYm18);
+            ctx.fillText(Data.tsToTime(msX * cur_pos + start), Graph.realX(cur_pos), realYm36);
             cur_pos += stepX;
         }
 
