@@ -214,8 +214,8 @@ var Graph = {
         //отрисовка меток времени
         ctx.textAlign = 'center';
         while (Graph.realX(cur_pos) < width) {
-            ctx.fillText(Graph.tsToData(Graph.MS_PER_PIXEL * cur_pos + start), Graph.realX(cur_pos), realYm18);
-            ctx.fillText(Graph.tsToTime(Graph.MS_PER_PIXEL * cur_pos + start), Graph.realX(cur_pos), realYm36);
+            ctx.fillText(Data.tsToData(Graph.MS_PER_PIXEL * cur_pos + start), Graph.realX(cur_pos), realYm18);
+            ctx.fillText(Data.tsToTime(Graph.MS_PER_PIXEL * cur_pos + start), Graph.realX(cur_pos), realYm36);
             cur_pos += stepX;
         }
 
@@ -227,33 +227,6 @@ var Graph = {
             ctx.fillText(cur_pos * unY, realXm8, Graph.realY(cur_pos));
             cur_pos += stepY;
         }
-    },
-
-    //перевод метки времени в формат ГГ-ММ-ДД
-    tsToData : function (ts) {
-        var fullData = new Date(ts),
-            year = fullData.getFullYear(),
-            month = fullData.getMonth() + 1,
-            day = fullData.getDate();
-
-        if(month < 10)  month = '0' + month;
-        if(day < 10)    day = '0' + day;
-
-        return year + '-' + month + '-' + day;
-    },
-
-    //перевод метки времени в формат ЧЧ:ММ:СС
-    tsToTime : function (ts) {
-        var fullData = new Date(ts),
-            hours = fullData.getHours(),
-            minutes = fullData.getMinutes(),
-            seconds = fullData.getSeconds();
-
-        if(hours < 10)   hours = '0' + hours;
-        if(minutes < 10) minutes = '0' + minutes;
-        if(seconds < 10) seconds = '0' + seconds;
-
-        return hours + ':' + minutes + ':' + seconds;
     },
 
     //возращает позицию пикселей в координатаъ canvas

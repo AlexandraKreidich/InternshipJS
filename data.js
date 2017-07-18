@@ -81,5 +81,32 @@ var Data = {
                 y: arrayY
             };
         }
+    },
+
+    //перевод метки времени в формат ГГ-ММ-ДД
+    tsToData : function (ts) {
+        var fullData = new Date(ts),
+            year = fullData.getFullYear(),
+            month = fullData.getMonth() + 1,
+            day = fullData.getDate();
+
+        if(month < 10)  month = '0' + month;
+        if(day < 10)    day = '0' + day;
+
+        return year + '-' + month + '-' + day;
+    },
+
+    //перевод метки времени в формат ЧЧ:ММ:СС
+    tsToTime : function (ts) {
+        var fullData = new Date(ts),
+            hours = fullData.getHours(),
+            minutes = fullData.getMinutes(),
+            seconds = fullData.getSeconds();
+
+        if(hours < 10)   hours = '0' + hours;
+        if(minutes < 10) minutes = '0' + minutes;
+        if(seconds < 10) seconds = '0' + seconds;
+
+        return hours + ':' + minutes + ':' + seconds;
     }
 };
