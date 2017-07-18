@@ -18,9 +18,9 @@ var Graph = {
 
     UNITS_PER_PIXEL : 10, //масштаб по OY
 
-    START_MS : 1498000010000, //значение в точке 0 по ОХ
-
     START_UNITS : 0, //значение в точке 0 по OY
+
+    START_MS : 1498000000000, //значение в точке 0 по OX
 
     init : function(){
         Graph.canvas = document.getElementsByTagName('canvas')[0];
@@ -50,27 +50,20 @@ var Graph = {
     //рендеровка графика(очистка всего поля и отрисовка заного)
     render : function(){
         Graph.resetCanvas();
-        Graph.drawAxes();
-        Graph.drawMarks();
-        Graph.drawGrid();
-        Graph.test();
+        Graph.buildData();
     },
 
     // NE PONYATNO (вызов функций отрисовки графика и меток)
-    test : function () {
-        //this.START_MS 1498000000000
-        //console.log((this.WIDTH-156)*this.MS_PER_PIXEL);
+    buildData : function () {
         Data.getDataFor(this.START_MS, Graph.OX_MS, Graph.buildLine);
         Data.getDataFor(this.START_MS, Graph.OX_MS, Graph.drawData);
     },
 
     //заливает верхнюю часть холста что бы график не вылазил за границы????
-    fillTop : function (){
-        //console.log('start');
+    fillMargin : function (){
         Graph.ctx.fillStyle = '#000000';
         Graph.ctx.fillRect(0, 0, Graph.WIDTH, Graph.MARGIN - 1);
-        //console.log('end');
-        //console.log('_________');
+        Graph.ctx.fillRect(Graph.realX(-1), Graph.realY(-1), Graph.WIDTH, Graph.MARGIN - 1);
     },
 
     //заливает весь холст черным
@@ -92,21 +85,29 @@ var Graph = {
         ctx.moveTo(Graph.tsToX(d.x[0]), Graph.unitsToY(d.y[0]));
         for(var i = 1; i < l; i++){
             //console.log("go");
-            ctx.lineTo(Graph.tsToX(d.x[i]), Graph.unitsToY(d.y[i]));
+            ctx.lineTo(Graph.tsToX(d.x[i]), Graph.unitsToY(d.y[i] - Graph.START_UNITS));
         }
         //console.log("cancel");
         ctx.stroke();
-        Graph.fillTop();
+
+        Graph.fillMargin();
+        Graph.drawAxes();
+        Graph.drawGrid();
+        Graph.drawMarks();
     },
 
     //отрисовка меток на осях
     drawMarks : function () {
-        //метки на оси ОХ
         var cur_pos = Graph.calculateSectionsOnX(),
             ctx = Graph.ctx,
-            width = Graph.WIDTH - Graph.MARGIN + 6,
+            width = Graph.WIDTH - Graph.MARGIN - 6,
             realY3 = Graph.realY(3),
             realYm3 = Graph.realY(-3);
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.lineWidth = 2;
+
+        //метки на оси ОХ
         ctx.beginPath();
         while (Graph.realX(cur_pos) < width){
             ctx.moveTo(Graph.realX(cur_pos), realY3);
@@ -116,7 +117,7 @@ var Graph = {
         ctx.stroke();
 
         //метки на оси OY
-        var height = Graph.HEIGHT - 2*Graph.MARGIN + 6,
+        var height = Graph.HEIGHT - 2*Graph.MARGIN - 6,
             realX3 = Graph.realX(3),
             realXm3 = Graph.realX(-3);
 
@@ -213,6 +214,7 @@ var Graph = {
             stepX = 5 * Graph.PX_PER_POINT,
             stepY = 2 * Graph.PX_PER_POINT,
             cur_pos = Graph.calculateSectionsOnX(),
+            cur_pos_Y = Graph.START_UNITS + Graph.calculateSectionsOnY()*Graph.UNITS_PER_PIXEL,
             width = Graph.WIDTH - Graph.MARGIN + 6,
             height = Graph.HEIGHT - 2*Graph.MARGIN + 6,
             realYm18 = Graph.realY(-18),
@@ -234,9 +236,10 @@ var Graph = {
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
         cur_pos = Graph.calculateSectionsOnY();
-        while (Graph.realX(cur_pos) < height) {
-            ctx.fillText(cur_pos * unY, realXm8, Graph.realY(cur_pos));
+        while (cur_pos < height) {
+            ctx.fillText(cur_pos_Y, realXm8, Graph.realY(cur_pos));
             cur_pos += stepY;
+            cur_pos_Y += stepY * unY;
         }
     },
 
