@@ -18,7 +18,7 @@ var Graph = {
 
     UNITS_PER_PIXEL : 10, //масштаб по OY
 
-    START_MS : 1498000000000, //значение в точке 0 по ОХ
+    START_MS : 1498000070000, //значение в точке 0 по ОХ
 
     START_UNITS : 0, //значение в точке 0 по OY
 
@@ -102,7 +102,7 @@ var Graph = {
     //отрисовка меток на осях
     drawMarks : function () {
         //метки на оси ОХ
-        var cur_pos = Graph.PX_PER_POINT,
+        var cur_pos = Graph.calculateSections(),
             ctx = Graph.ctx,
             width = Graph.WIDTH - Graph.MARGIN + 6,
             realY3 = Graph.realY(3),
@@ -135,9 +135,9 @@ var Graph = {
         ctx.fill();
     },
 
-    //отрисовка стрелочек
+    //отрисовка сетки
     drawGrid : function () {
-        var cur_pos = Graph.PX_PER_POINT,
+        var cur_pos = Graph.calculateSections(),
             ctx = Graph.ctx,
             margin = Graph.MARGIN,
             height = Graph.HEIGHT - 2*margin,
@@ -166,6 +166,11 @@ var Graph = {
         ctx.stroke();
     },
 
+    //вычисление первого отступа метки
+    calculateSections : function () {
+        return (Graph.START_MS%(Graph.MS_PER_PIXEL*Graph.PX_PER_POINT))/Graph.MS_PER_PIXEL;
+    },
+
     //отрисовка координатных прямых
     drawAxes : function () {
         var realX0 = Graph.realX(0), realY0 = Graph.realY(0),
@@ -182,16 +187,16 @@ var Graph = {
         ctx.lineTo(realX0, margin);
         ctx.moveTo(realX0, margin);
 
-        //отрисовка стрелочки на OX
+        //отрисовка стрелочки на OY
         ctx.moveTo(realX0, margin);
         ctx.lineTo(Graph.realX(3), margin + 6);
         ctx.lineTo(Graph.realX(-3), margin + 6);
         ctx.lineTo(realX0, margin);
 
-        //отрисовка стрелочки на OY
+        //отрисовка стрелочки на OX
         ctx.moveTo(Graph.WIDTH - margin, realY0);
-        ctx.lineTo(Graph.WIDTH - margin + 6, Graph.realY(-3));
-        ctx.lineTo(Graph.WIDTH - margin + 6, Graph.realY(3));
+        ctx.lineTo(Graph.WIDTH - margin - 6, Graph.realY(-3));
+        ctx.lineTo(Graph.WIDTH - margin - 6, Graph.realY(3));
         ctx.lineTo(Graph.WIDTH - margin, realY0);
         ctx.stroke();
     },
