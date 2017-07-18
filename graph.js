@@ -77,7 +77,7 @@ var Graph = {
     buildLine : function (d, start) {
         //console.log(d, start);
         var l = d.x.length, ctx = Graph.ctx;
-        ctx.strokeStyle = '#ffae7a';
+        ctx.strokeStyle = '#ed4fdf';
         ctx.lineWidth = 1;
         ctx.beginPath();
         //console.log("start");
