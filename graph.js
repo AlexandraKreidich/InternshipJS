@@ -18,7 +18,7 @@ var Graph = {
 
     UNITS_PER_PIXEL : 10, //масштаб по OY
 
-    START_MS : 1498000070000, //значение в точке 0 по ОХ
+    START_MS : 1498000010000, //значение в точке 0 по ОХ
 
     START_UNITS : 0, //значение в точке 0 по OY
 
@@ -102,7 +102,7 @@ var Graph = {
     //отрисовка меток на осях
     drawMarks : function () {
         //метки на оси ОХ
-        var cur_pos = Graph.calculateSections(),
+        var cur_pos = Graph.calculateSectionsOnX(),
             ctx = Graph.ctx,
             width = Graph.WIDTH - Graph.MARGIN + 6,
             realY3 = Graph.realY(3),
@@ -119,7 +119,8 @@ var Graph = {
         var height = Graph.HEIGHT - 2*Graph.MARGIN + 6,
             realX3 = Graph.realX(3),
             realXm3 = Graph.realX(-3);
-        cur_pos = Graph.PX_PER_POINT;
+
+        cur_pos = Graph.calculateSectionsOnY();
         ctx.beginPath();
         while (cur_pos < height){
             ctx.moveTo(realXm3, Graph.realY(cur_pos));
@@ -137,7 +138,7 @@ var Graph = {
 
     //отрисовка сетки
     drawGrid : function () {
-        var cur_pos = Graph.calculateSections(),
+        var cur_pos = Graph.calculateSectionsOnX(),
             ctx = Graph.ctx,
             margin = Graph.MARGIN,
             height = Graph.HEIGHT - 2*margin,
@@ -156,7 +157,7 @@ var Graph = {
         ctx.stroke();
 
         //отрисовка по OY
-        cur_pos = Graph.PX_PER_POINT;
+        cur_pos = Graph.calculateSectionsOnY();
         ctx.beginPath();
         while (cur_pos < height){
             ctx.moveTo(realX0, Graph.realY(cur_pos));
@@ -166,9 +167,14 @@ var Graph = {
         ctx.stroke();
     },
 
-    //вычисление первого отступа метки
-    calculateSections : function () {
+    //вычисление первого отступа метки по ОX
+    calculateSectionsOnX : function () {
         return (Graph.START_MS%(Graph.MS_PER_PIXEL*Graph.PX_PER_POINT))/Graph.MS_PER_PIXEL;
+    },
+
+    //вычисление первого отступа метки по OY
+    calculateSectionsOnY : function () {
+        return (Graph.START_UNITS%(Graph.UNITS_PER_PIXEL*Graph.PX_PER_POINT))/Graph.UNITS_PER_PIXEL;
     },
 
     //отрисовка координатных прямых
@@ -206,7 +212,7 @@ var Graph = {
         var ctx = Graph.ctx,
             stepX = 5 * Graph.PX_PER_POINT,
             stepY = 2 * Graph.PX_PER_POINT,
-            cur_pos = 0,
+            cur_pos = Graph.calculateSectionsOnX(),
             width = Graph.WIDTH - Graph.MARGIN + 6,
             height = Graph.HEIGHT - 2*Graph.MARGIN + 6,
             realYm18 = Graph.realY(-18),
@@ -227,7 +233,7 @@ var Graph = {
         //отрисовка значений
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
-        cur_pos = stepY;
+        cur_pos = Graph.calculateSectionsOnY();
         while (Graph.realX(cur_pos) < height) {
             ctx.fillText(cur_pos * unY, realXm8, Graph.realY(cur_pos));
             cur_pos += stepY;

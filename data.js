@@ -1,6 +1,6 @@
 var Data = {
 
-//подгрузка данных
+    //подгрузка данных
     getDataFor: function(start, duration, f) {
         Data.Request.getData('data.csv').then(function(response){
             Data.processData(response, start, duration, f);
@@ -55,14 +55,14 @@ var Data = {
             });
         },
 
-//после отправки url получает просто текст из файла и отдаёт на обработку в следующую функцию
+        //после отправки url получает просто текст из файла и отдаёт на обработку в следующую функцию
         getData: function(url) {
             return Data.Request.get(url).then(Data.Request.parseData);
         },
 
-//разбирает на два массива
+        //разбирает на два массива
         parseData: function(data) {
-//console.log(data);
+            //console.log(data);
             var arr = data.split('\n');
             var l = arr.length - 1;
             var arrayX = [],
@@ -73,8 +73,8 @@ var Data = {
                 arrayX.push(Number(tmp[0]));
                 arrayY.push(Number(tmp[1]));
             }
-//console.log(arrayY);
-//console.log(arrayX);
+            //console.log(arrayY);
+            //console.log(arrayX);
 
             return {
                 x: arrayX,
