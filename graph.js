@@ -279,12 +279,14 @@ var Graph = {
     //масштабирование по OX и OY
     zoom : function (e) {
         var plus = 107,
+            plusS = 187,
             minus = 109,
+            minusS = 189,
             power = 1.1,
             maxZoom = 15,
             minZoom = -15;
         switch (e.keyCode){
-            case plus :
+            case plus : case plusS :
                 Graph.CurrentZoom = (Graph.CurrentZoom < maxZoom)? Graph.CurrentZoom + 1 : Graph.CurrentZoom;
                 Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
                 Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
@@ -293,7 +295,7 @@ var Graph = {
                 Graph.SPEED += 0.1;
                 Graph.render();
                 break;
-            case minus :
+            case minus : case minusS :
                 Graph.CurrentZoom = (Graph.CurrentZoom > minZoom)? Graph.CurrentZoom - 1 : Graph.CurrentZoom;
                 Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
                 Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
