@@ -22,6 +22,14 @@ var Graph = {
 
     START_MS : 1498000000000, //значение в точке 0 по OX
 
+    INIT_MS_PER_PIXEL : 1000, //фиксированный масштаб по ОХ
+
+    INIT_UNIT_PER_PIXEL : 10, //фиксированный масштаб по OY
+
+    CurrentZoom : 0, //текущий масштаб [-20, 20]
+
+    SPEED : 4, //скорость скроллинга
+
     init : function(){
         Graph.canvas = document.getElementsByTagName('canvas')[0];
         Graph.getDimensions();
@@ -29,6 +37,7 @@ var Graph = {
         Graph.render();
         window.addEventListener('resize', Graph.resize);
         window.addEventListener('keydown', Graph.move);
+        window.addEventListener('keydown', Graph.zoom);
     },
 
     //функция получающая данные о размере экрана, и назначает размер холста
@@ -78,7 +87,7 @@ var Graph = {
     buildLine : function (d, start) {
         //console.log(d, start);
         var l = d.x.length, ctx = Graph.ctx;
-        ctx.strokeStyle = '#5ced00';
+        ctx.strokeStyle = '#0190ff';
         ctx.lineWidth = 1;
         ctx.beginPath();
         //console.log("start");
@@ -257,12 +266,42 @@ var Graph = {
         var left = 37,
             up = 38,
             right = 39,
-            down = 40;
+            down = 40,
+            speed = Graph.SPEED;
         switch (e.keyCode){
-            case left : Graph.START_MS += 4 * Graph.MS_PER_PIXEL; Graph.render(); break;
-            case right : Graph.START_MS -= 4 * Graph.MS_PER_PIXEL; Graph.render(); break;
-            case up : Graph.START_UNITS -= 4 * Graph.UNITS_PER_PIXEL; Graph.render(); break;
-            case down : Graph.START_UNITS += 4 * Graph.UNITS_PER_PIXEL; Graph.render(); break;
+            case left : Graph.START_MS += speed  * Graph.MS_PER_PIXEL; Graph.render(); break;
+            case right : Graph.START_MS -= speed * Graph.MS_PER_PIXEL; Graph.render(); break;
+            case up : Graph.START_UNITS -= speed * Graph.UNITS_PER_PIXEL; Graph.render(); break;
+            case down : Graph.START_UNITS += speed * Graph.UNITS_PER_PIXEL; Graph.render(); break;
+        }
+    },
+
+    //масштабирование по OX и OY
+    zoom : function (e) {
+        var plus = 107,
+            minus = 109,
+            power = 1.1,
+            maxZoom = 15,
+            minZoom = -15;
+        switch (e.keyCode){
+            case plus :
+                Graph.CurrentZoom = (Graph.CurrentZoom < maxZoom)? Graph.CurrentZoom + 1 : Graph.CurrentZoom;
+                Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
+                Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
+                Graph.OX_MS = (Graph.WIDTH - 2*Graph.MARGIN)*Graph.MS_PER_PIXEL;
+                //Graph.PX_PER_POINT += 10;
+                Graph.SPEED += 0.1;
+                Graph.render();
+                break;
+            case minus :
+                Graph.CurrentZoom = (Graph.CurrentZoom > minZoom)? Graph.CurrentZoom - 1 : Graph.CurrentZoom;
+                Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
+                Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
+                Graph.OX_MS = (Graph.WIDTH - 2*Graph.MARGIN)*Graph.MS_PER_PIXEL;
+                //Graph.PX_PER_POINT -= 10;
+                Graph.SPEED -= 0.1;
+                Graph.render();
+                break;
         }
     },
 
@@ -283,6 +322,6 @@ var Graph = {
 
     //переводит значение по OY в координаты на Y
     unitsToY : function (units) {
-        return Graph.realY(units/10);
+        return Graph.realY(units/Graph.UNITS_PER_PIXEL);
     }
 };
