@@ -82,7 +82,7 @@ var Graph = {
         ctx.lineWidth = 1;
         ctx.beginPath();
         //console.log("start");
-        ctx.moveTo(Graph.tsToX(d.x[0]), Graph.unitsToY(d.y[0]));
+        ctx.moveTo(Graph.tsToX(d.x[0]), Graph.unitsToY(d.y[0] - Graph.START_UNITS));
         for(var i = 1; i < l; i++){
             //console.log("go");
             ctx.lineTo(Graph.tsToX(d.x[i]), Graph.unitsToY(d.y[i] - Graph.START_UNITS));
