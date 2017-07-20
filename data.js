@@ -83,7 +83,7 @@ var Data = {
         }
     },
 
-    //перевод метки времени в формат ГГ-ММ-ДД
+    //перевод метки времени в формат ГГГГ-ММ-ДД
     tsToData : function (ts) {
         var fullData = new Date(ts),
             year = fullData.getFullYear(),
