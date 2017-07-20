@@ -30,6 +30,16 @@ var Graph = {
 
     SPEED : 4, //скорость скроллинга
 
+    mouseFlag : false, //индикатор нажатия ЛКМ
+
+    cursorPositionX : 0, //положение курсора по X
+
+    cursorPositionY : 0, //положение курсора по Y
+
+    shiftX : 0, //сдвиг по ОХ
+
+    shiftY : 0, //сдвиг по OY
+
     init : function(){
         Graph.canvas = document.getElementsByTagName('canvas')[0];
         Graph.getDimensions();
@@ -38,6 +48,9 @@ var Graph = {
         window.addEventListener('resize', Graph.resize);
         window.addEventListener('keydown', Graph.move);
         window.addEventListener('keydown', Graph.zoom);
+        window.addEventListener('mousedown', Graph.onDown);
+        window.addEventListener('mouseup', Graph.onUp);
+        window.addEventListener('mousemove', Graph.onMove);
     },
 
     //функция получающая данные о размере экрана, и назначает размер холста
@@ -113,6 +126,48 @@ var Graph = {
                 //console.log(Graph.CurrentZoom);
             break;
         }
+    },
+
+    onDown : function (e) {
+        if((e.clientX - Graph.MARGIN) > 0 && (e.clientX - Graph.MARGIN) < Graph.WIDTH - 2 * Graph.MARGIN && Graph.realY(e.clientY) > 0 && Graph.realY(e.clientY) < Graph.HEIGHT - 2 * Graph.MARGIN) {
+            Graph.mouseFlag = true;
+            //console.log('туда');
+            Graph.cursorPositionX = e.clientX - Graph.MARGIN;
+            Graph.cursorPositionY = Graph.realY(e.clientY);
+        }
+    },
+
+    onUp : function (e) {
+        Graph.mouseFlag = false;
+        Graph.cursorPositionX = e.clientX - Graph.MARGIN;
+        Graph.cursorPositionY = Graph.realY(e.clientY);
+    },
+
+    onMove : function (e) {
+      if(Graph.mouseFlag){
+          //console.log('x: ' + (e.clientX - Graph.MARGIN) + 'y: ' + Graph.realY(e.clientY));
+          var xMS = (e.clientX - Graph.MARGIN),
+              yUN = Graph.realY(e.clientY);
+          //console.log(x,y);
+          Graph.dragGraph(xMS, yUN);
+      }
+    },
+
+    dragGraph : function (x, y) {
+        //console.log(Graph.cursorPositionX - x, Graph.cursorPositionY - y, x, y);
+        Graph.shiftX += Math.abs(Graph.cursorPositionX - x);
+        Graph.shiftY += Math.abs(Graph.cursorPositionY - y);
+        //console.log(Graph.shiftX,Graph.shiftY);
+        if(Graph.shiftX > 10 && Graph.shiftY > 10){
+            Graph.START_MS -= (Graph.cursorPositionX - x)*Graph.MS_PER_PIXEL;
+            Graph.START_UNITS -= (Graph.cursorPositionY - y)*Graph.UNITS_PER_PIXEL;
+            Graph.cursorPositionX = x;
+            Graph.cursorPositionY = y;
+            Graph.render();
+            Graph.shiftX = 0;
+            Graph.shiftY = 0;
+        }
+
     },
 
     //заливает весь холст черным
