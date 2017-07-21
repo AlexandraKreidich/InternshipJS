@@ -1,13 +1,13 @@
 var Data = {
 
     //подгрузка данных
-    getDataFor: function(start, duration, f) {
-        Data.Request.getData('data.csv').then(function(response){
+    getDataFor: function (start, duration, f) {
+        Data.Request.getData('data.csv').then(function (response) {
             Data.processData(response, start, duration, f);
         });
     },
 
-    processData: function(data, start, duration, f) {
+    processData: function (data, start, duration, f) {
 
         var arrayX = [],
             arrayY = [],
@@ -32,13 +32,13 @@ var Data = {
     },
 
     Request: {
-        get: function(url) {
-            return new Promise(function(resolve, reject) {
+        get: function (url) {
+            return new Promise(function (resolve, reject) {
 
                 var req = new XMLHttpRequest();
                 req.open('GET', url);
 
-                req.onload = function() {
+                req.onload = function () {
 
                     if (req.status === 200) {
                         resolve(req.response);
@@ -47,7 +47,7 @@ var Data = {
                     }
                 };
 
-                req.onerror = function() {
+                req.onerror = function () {
                     reject(Error("Network Error"));
                 };
 
@@ -56,12 +56,12 @@ var Data = {
         },
 
         //после отправки url получает просто текст из файла и отдаёт на обработку в следующую функцию
-        getData: function(url) {
+        getData: function (url) {
             return Data.Request.get(url).then(Data.Request.parseData);
         },
 
         //разбирает на два массива
-        parseData: function(data) {
+        parseData: function (data) {
             //console.log(data);
             var arr = data.split('\n');
             var l = arr.length - 1;
@@ -84,28 +84,28 @@ var Data = {
     },
 
     //перевод метки времени в формат ГГГГ-ММ-ДД
-    tsToData : function (ts) {
+    tsToData: function (ts) {
         var fullData = new Date(ts),
             year = fullData.getFullYear(),
             month = fullData.getMonth() + 1,
             day = fullData.getDate();
 
-        if(month < 10)  month = '0' + month;
-        if(day < 10)    day = '0' + day;
+        if (month < 10) month = '0' + month;
+        if (day < 10) day = '0' + day;
 
         return year + '-' + month + '-' + day;
     },
 
     //перевод метки времени в формат ЧЧ:ММ:СС
-    tsToTime : function (ts) {
+    tsToTime: function (ts) {
         var fullData = new Date(ts),
             hours = fullData.getHours(),
             minutes = fullData.getMinutes(),
             seconds = fullData.getSeconds();
 
-        if(hours < 10)   hours = '0' + hours;
-        if(minutes < 10) minutes = '0' + minutes;
-        if(seconds < 10) seconds = '0' + seconds;
+        if (hours < 10) hours = '0' + hours;
+        if (minutes < 10) minutes = '0' + minutes;
+        if (seconds < 10) seconds = '0' + seconds;
 
         return hours + ':' + minutes + ':' + seconds;
     }
