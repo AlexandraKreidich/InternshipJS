@@ -125,42 +125,85 @@ var Graph = {
             minus = 109, //клавиша - на нумпаде
             minusS = 189, //клавиша -
             power = 1.1, //степень зума
-            maxZoom = 15, //максимальный зум
-            minZoom = -15, //минимальный зум
             PPP = 100, //PIXEL_PER_POINT
             stepPPP = 10, //шаг приращения к PIXEL_PER_POINT
-            maxPPP = 150, //максимальная величина PIXEL_PER_POINT
-            minPPP = 80, //минимальная величина PIXEL_PER_POINT
-            tmp = (e.deltaY) ? Math.round(e.deltaY) : e.keyCode;
+            key = (e.deltaY) ? e.type : e.keyCode;
 
-        switch (tmp) {
+        switch (key) {
             case plus :
             case plusS :
-            case -167 :
-                Graph.CurrentZoom = (Graph.CurrentZoom < maxZoom) ? Graph.CurrentZoom + 1 : Graph.CurrentZoom;
-                Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
-                Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
-                Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
-                Graph.PX_PER_POINT = (Graph.PX_PER_POINT === maxPPP || Graph.CurrentZoom === maxZoom) ? PPP : Graph.PX_PER_POINT + stepPPP;
-                Graph.SPEED += 0.1;
-                Graph.render();
-                //console.log(Graph.CurrentZoom);
+                Graph.zoomIn(e, power, PPP, stepPPP);
                 break;
             case minus :
             case minusS :
-            case 167 :
-                Graph.CurrentZoom = (Graph.CurrentZoom > minZoom) ? Graph.CurrentZoom - 1 : Graph.CurrentZoom;
-                Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
-                Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
-                Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
-                Graph.PX_PER_POINT = (Graph.PX_PER_POINT === minPPP || Graph.CurrentZoom === minZoom) ? PPP : Graph.PX_PER_POINT - stepPPP;
-                Graph.SPEED -= 0.1;
-                Graph.render();
-                //console.log(Graph.CurrentZoom);
+                Graph.zoomOut(e, power, PPP, stepPPP);
+                break;
+            case 'wheel' :
+                if (e.deltaY < 0 && (e.clientX - Graph.MARGIN) > 0 && (e.clientX - Graph.MARGIN) < Graph.WIDTH - 2 * Graph.MARGIN && Graph.realY(e.clientY) > 0 && Graph.realY(e.clientY) < Graph.HEIGHT - 2 * Graph.MARGIN)
+                    Graph.zoomIn(e, power, PPP, stepPPP, true);
+                else if (e.deltaY > 0 && (e.clientX - Graph.MARGIN) > 0 && (e.clientX - Graph.MARGIN) < Graph.WIDTH - 2 * Graph.MARGIN && Graph.realY(e.clientY) > 0 && Graph.realY(e.clientY) < Graph.HEIGHT - 2 * Graph.MARGIN)
+                    Graph.zoomOut(e, power, PPP, stepPPP, true);
                 break;
         }
     },
 
+    //функция увеличения масштаба графика
+    zoomIn: function (e, power, PPP, stepPPP, flag) {
+        var maxZoom = 15, //максимальный зум
+            maxPPP = 150; //максимальная величина PIXEL_PER_POINT
+        if (flag) {
+            console.log(e.deltaY);
+            // Graph.CurrentZoom = (Graph.CurrentZoom < maxZoom) ? Graph.CurrentZoom + 1 : Graph.CurrentZoom;
+            // Graph.cursorPositionXonWheel = e.clientX - Graph.MARGIN;
+            // Graph.cursorPositionYonWheel = Graph.realY(e.clientY);
+            //
+            // var aX = Graph.cursorPositionXonWheel*Graph.MS_PER_PIXEL,
+            //     bX = (Graph.WIDTH - 2 * Graph.MARGIN - aX)*Graph.MS_PER_PIXEL,
+            //     aY = Graph.cursorPositionYonWheel,
+            //     bY = Graph.HEIGHT - 2 * Graph.MARGIN - aY,
+            //     ratioX = aX / (Graph.WIDTH - 2*Graph.MARGIN),
+            //     ratioY = aY / (Graph.HEIGHT - 2*Graph.MARGIN);
+            //
+            //
+            // Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL* Math.pow(power, -Graph.CurrentZoom)*ratioX;
+            // Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
+            // Graph.render();
+            // // Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
+            // // Graph.START_MS = aX - Graph.OX_MS*aX;
+            // // Graph.render();
+            // //
+            // // console.log(Graph.cursorPositionXonWheel, Graph.cursorPositionYonWheel);
+        }
+        else {
+            Graph.CurrentZoom = (Graph.CurrentZoom < maxZoom) ? Graph.CurrentZoom + 1 : Graph.CurrentZoom;
+            Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
+            Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
+            Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
+            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === maxPPP || Graph.CurrentZoom === maxZoom) ? PPP : Graph.PX_PER_POINT + stepPPP;
+            Graph.SPEED += 0.1;
+            Graph.render();
+        }
+    },
+
+    //функция уменьшения масштаба графика
+    zoomOut: function (e, power, PPP, stepPPP, flag) {
+        var minZoom = -15, //минимальный зум
+            minPPP = 80; //минимальная величина PIXEL_PER_POINT
+        if (flag) {
+            console.log(e.deltaY);
+        }
+        else {
+            Graph.CurrentZoom = (Graph.CurrentZoom > minZoom) ? Graph.CurrentZoom - 1 : Graph.CurrentZoom;
+            Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
+            Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
+            Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
+            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === minPPP || Graph.CurrentZoom === minZoom) ? PPP : Graph.PX_PER_POINT - stepPPP;
+            Graph.SPEED -= 0.1;
+            Graph.render();
+        }
+    },
+
+    //функция для обрабочика событий при нажатии на ЛКМ
     onDown: function (e) {
         if ((e.clientX - Graph.MARGIN) > 0 && (e.clientX - Graph.MARGIN) < Graph.WIDTH - 2 * Graph.MARGIN && Graph.realY(e.clientY) > 0 && Graph.realY(e.clientY) < Graph.HEIGHT - 2 * Graph.MARGIN) {
             Graph.mouseFlag = true;
@@ -170,12 +213,14 @@ var Graph = {
         }
     },
 
+    //функция для обработчика событий при отпускании ЛКМ
     onUp: function (e) {
         Graph.mouseFlag = false;
         Graph.cursorPositionX = e.clientX - Graph.MARGIN;
         Graph.cursorPositionY = Graph.realY(e.clientY);
     },
 
+    //функция для обработчика событий при движении мыши
     onMove: function (e) {
         if (Graph.mouseFlag) {
             //console.log('x: ' + (e.clientX - Graph.MARGIN) + 'y: ' + Graph.realY(e.clientY));
@@ -186,49 +231,7 @@ var Graph = {
         }
     },
 
-    onWheel: function (e) {
-        var mark = 167,
-            plus = 107, //клавиша + на нумпаде
-            plusS = 187, //клавиша =
-            minus = 109, //клавиша - на нумпаде
-            minusS = 189, //клавиша -
-            power = 1.1, //степень зума
-            maxZoom = 15, //максимальный зум
-            minZoom = -15, //минимальный зум
-            PPP = 100, //PIXEL_PER_POINT
-            stepPPP = 10, //шаг приращения к PIXEL_PER_POINT
-            maxPPP = 150, //максимальная величина PIXEL_PER_POINT
-            minPPP = 80; //минимальная величина PIXEL_PER_POINT
-        // Graph.cursorPositionXonWheel = e.clientX - Graph.MARGIN;
-        // Graph.cursorPositionYonWheel = Graph.realY(e.clientY);
-        var scollSize = Math.round(e.deltaY);
-
-        switch (Math.round(e.deltaY)) {
-            case mark:
-                Graph.CurrentZoom = (Graph.CurrentZoom < maxZoom) ? Graph.CurrentZoom + 1 : Graph.CurrentZoom;
-                Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
-                Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
-                Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
-                Graph.PX_PER_POINT = (Graph.PX_PER_POINT === maxPPP || Graph.CurrentZoom === maxZoom) ? PPP : Graph.PX_PER_POINT + stepPPP;
-                Graph.SPEED += 0.1;
-                Graph.render();
-                //console.log(Graph.CurrentZoom);
-                break;
-            case -mark:
-                Graph.CurrentZoom = (Graph.CurrentZoom > minZoom) ? Graph.CurrentZoom - 1 : Graph.CurrentZoom;
-                Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
-                Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
-                Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
-                Graph.PX_PER_POINT = (Graph.PX_PER_POINT === minPPP || Graph.CurrentZoom === minZoom) ? PPP : Graph.PX_PER_POINT - stepPPP;
-                Graph.SPEED -= 0.1;
-                Graph.render();
-                //console.log(Graph.CurrentZoom);
-                break;
-        }
-
-        console.log(Math.round(e.deltaY));
-    },
-
+    //передвижение графика
     dragGraph: function (x, y) {
         //console.log(Graph.cursorPositionX - x, Graph.cursorPositionY - y, x, y);
         Graph.shiftX += Math.abs(Graph.cursorPositionX - x);
