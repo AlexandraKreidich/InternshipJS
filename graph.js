@@ -42,6 +42,10 @@ var Graph = {
 
     cursorPositionY: 0, //положение курсора по Y
 
+    cursorPositionXonWheel: 0, //положение курсора по Х при прокрутке колесиком
+
+    cursorPositionYonWheel: 0, //положение курсора по Y при прокрутке колесиком
+
     shiftX: 0, //сдвиг по ОХ
 
     shiftY: 0, //сдвиг по OY
@@ -59,6 +63,7 @@ var Graph = {
         window.addEventListener('mousedown', Graph.onDown);
         window.addEventListener('mouseup', Graph.onUp);
         window.addEventListener('mousemove', Graph.onMove);
+        window.addEventListener('wheel', Graph.zoom);
     },
 
     //функция получающая данные о размере экрана, и назначает размер холста
@@ -76,11 +81,6 @@ var Graph = {
     render: function () {
         Graph.resetCanvas();
         Graph.buildData();
-    },
-
-    transferImageData: function () {
-        Graph.imageData = Graph.tempCtx.getImageData(0, 0, Graph.WIDTH, Graph.HEIGHT);
-        Graph.ctx.putImageData(Graph.imageData, 0, 0);
     },
 
     //функция для отслеживания изменения размров экрана
@@ -130,10 +130,13 @@ var Graph = {
             PPP = 100, //PIXEL_PER_POINT
             stepPPP = 10, //шаг приращения к PIXEL_PER_POINT
             maxPPP = 150, //максимальная величина PIXEL_PER_POINT
-            minPPP = 80; //минимальная величина PIXEL_PER_POINT
-        switch (e.keyCode) {
+            minPPP = 80, //минимальная величина PIXEL_PER_POINT
+            tmp = (e.deltaY) ? Math.round(e.deltaY) : e.keyCode;
+
+        switch (tmp) {
             case plus :
             case plusS :
+            case -167 :
                 Graph.CurrentZoom = (Graph.CurrentZoom < maxZoom) ? Graph.CurrentZoom + 1 : Graph.CurrentZoom;
                 Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
                 Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
@@ -145,6 +148,7 @@ var Graph = {
                 break;
             case minus :
             case minusS :
+            case 167 :
                 Graph.CurrentZoom = (Graph.CurrentZoom > minZoom) ? Graph.CurrentZoom - 1 : Graph.CurrentZoom;
                 Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
                 Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
@@ -180,6 +184,49 @@ var Graph = {
             //console.log(x,y);
             Graph.dragGraph(xMS, yUN);
         }
+    },
+
+    onWheel: function (e) {
+        var mark = 167,
+            plus = 107, //клавиша + на нумпаде
+            plusS = 187, //клавиша =
+            minus = 109, //клавиша - на нумпаде
+            minusS = 189, //клавиша -
+            power = 1.1, //степень зума
+            maxZoom = 15, //максимальный зум
+            minZoom = -15, //минимальный зум
+            PPP = 100, //PIXEL_PER_POINT
+            stepPPP = 10, //шаг приращения к PIXEL_PER_POINT
+            maxPPP = 150, //максимальная величина PIXEL_PER_POINT
+            minPPP = 80; //минимальная величина PIXEL_PER_POINT
+        // Graph.cursorPositionXonWheel = e.clientX - Graph.MARGIN;
+        // Graph.cursorPositionYonWheel = Graph.realY(e.clientY);
+        var scollSize = Math.round(e.deltaY);
+
+        switch (Math.round(e.deltaY)) {
+            case mark:
+                Graph.CurrentZoom = (Graph.CurrentZoom < maxZoom) ? Graph.CurrentZoom + 1 : Graph.CurrentZoom;
+                Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
+                Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
+                Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
+                Graph.PX_PER_POINT = (Graph.PX_PER_POINT === maxPPP || Graph.CurrentZoom === maxZoom) ? PPP : Graph.PX_PER_POINT + stepPPP;
+                Graph.SPEED += 0.1;
+                Graph.render();
+                //console.log(Graph.CurrentZoom);
+                break;
+            case -mark:
+                Graph.CurrentZoom = (Graph.CurrentZoom > minZoom) ? Graph.CurrentZoom - 1 : Graph.CurrentZoom;
+                Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
+                Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
+                Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
+                Graph.PX_PER_POINT = (Graph.PX_PER_POINT === minPPP || Graph.CurrentZoom === minZoom) ? PPP : Graph.PX_PER_POINT - stepPPP;
+                Graph.SPEED -= 0.1;
+                Graph.render();
+                //console.log(Graph.CurrentZoom);
+                break;
+        }
+
+        console.log(Math.round(e.deltaY));
     },
 
     dragGraph: function (x, y) {
@@ -387,6 +434,13 @@ var Graph = {
         ctx.arc(Graph.realX(0), Graph.realY(0), 4, 0, 2 * Math.PI);
         ctx.fill();
     },
+
+    //отрисовывает на главном холсте график
+    transferImageData: function () {
+        Graph.imageData = Graph.tempCtx.getImageData(0, 0, Graph.WIDTH, Graph.HEIGHT);
+        Graph.ctx.putImageData(Graph.imageData, 0, 0);
+    },
+
 
     //переводит метку времени в координату по X
     tsToX: function (ts) {
