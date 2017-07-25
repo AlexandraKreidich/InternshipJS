@@ -62,6 +62,7 @@ var Graph = {
         window.addEventListener('mouseup', Graph.onUp);
         window.addEventListener('mousemove', Graph.onMove);
         window.addEventListener('wheel', Graph.zoom);
+        window.addEventListener('dblclick', Graph.zoom);
     },
 
     //функция получающая данные о размере экрана, и назначает размер холста
@@ -127,6 +128,7 @@ var Graph = {
             PPP = 100, //PIXEL_PER_POINT
             stepPPP = 10, //шаг приращения к PIXEL_PER_POINT
             key = (e.deltaY) ? e.type : e.keyCode;
+            key = (!key) ? e.type : key;
 
         switch (key) {
             case plus :
@@ -142,6 +144,9 @@ var Graph = {
                     Graph.zoomIn(e, power, PPP, stepPPP, true);
                 else if (e.deltaY > 0 && (e.clientX - Graph.MARGIN) > 0 && (e.clientX - Graph.MARGIN) < Graph.WIDTH - 2 * Graph.MARGIN && Graph.realY(e.clientY) > 0 && Graph.realY(e.clientY) < Graph.HEIGHT - 2 * Graph.MARGIN)
                     Graph.zoomOut(e, power, PPP, stepPPP, true);
+                break;
+            case 'dblclick' :
+                Graph.zoomIn(e, power, PPP, stepPPP, true);
                 break;
         }
     },
