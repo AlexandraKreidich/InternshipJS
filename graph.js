@@ -18,6 +18,8 @@ var Graph = {
 
     OX_MS: 0, //ось ОХ в миллисекундах
 
+    OY_MS: 0, //ось OY в значениях
+
     PX_PER_POINT: 100, //расстояние между двумя соседними точками на осях
 
     MS_PER_PIXEL: 1000, //масштаб оси ОХ
@@ -75,6 +77,7 @@ var Graph = {
         Graph.canvas.height = Graph.HEIGHT;
         Graph.canvas.width = Graph.WIDTH;
         Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
+        Graph.OY_MS = (Graph.HEIGHT - 2 * Graph.MARGIN) * Graph.UNITS_PER_PIXEL;
     },
 
     //рендеровка графика(очистка всего поля и отрисовка заного)
@@ -152,27 +155,27 @@ var Graph = {
         var maxZoom = 15, //максимальный зум
             maxPPP = 150; //максимальная величина PIXEL_PER_POINT
         if (flag) {
-            console.log(e.deltaY);
-            // Graph.CurrentZoom = (Graph.CurrentZoom < maxZoom) ? Graph.CurrentZoom + 1 : Graph.CurrentZoom;
-            // Graph.cursorPositionXonWheel = e.clientX - Graph.MARGIN;
-            // Graph.cursorPositionYonWheel = Graph.realY(e.clientY);
-            //
-            // var aX = Graph.cursorPositionXonWheel*Graph.MS_PER_PIXEL,
-            //     bX = (Graph.WIDTH - 2 * Graph.MARGIN - aX)*Graph.MS_PER_PIXEL,
-            //     aY = Graph.cursorPositionYonWheel,
-            //     bY = Graph.HEIGHT - 2 * Graph.MARGIN - aY,
-            //     ratioX = aX / (Graph.WIDTH - 2*Graph.MARGIN),
-            //     ratioY = aY / (Graph.HEIGHT - 2*Graph.MARGIN);
-            //
-            //
-            // Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL* Math.pow(power, -Graph.CurrentZoom)*ratioX;
-            // Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
-            // Graph.render();
-            // // Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
-            // // Graph.START_MS = aX - Graph.OX_MS*aX;
-            // // Graph.render();
-            // //
-            // // console.log(Graph.cursorPositionXonWheel, Graph.cursorPositionYonWheel);
+            Graph.CurrentZoom = (Graph.CurrentZoom < maxZoom) ? Graph.CurrentZoom + 1 : Graph.CurrentZoom;
+            Graph.cursorPositionXonWheel = e.clientX - Graph.MARGIN;
+            Graph.cursorPositionYonWheel = Graph.realY(e.clientY);
+
+            var aX = Graph.cursorPositionXonWheel,
+                aY = Graph.cursorPositionYonWheel,
+                cX = Graph.START_MS + aX * Graph.MS_PER_PIXEL,
+                cY = Graph.START_UNITS + aY * Graph.UNITS_PER_PIXEL,
+                ratioX = aX / (Graph.WIDTH - 2 * Graph.MARGIN),
+                ratioY = aY / (Graph.HEIGHT - 2 * Graph.MARGIN);
+
+
+            Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
+            Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
+            Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
+            Graph.OY_MS = (Graph.HEIGHT - 2 * Graph.MARGIN) * Graph.UNITS_PER_PIXEL;
+            Graph.START_MS = cX - Graph.OX_MS * ratioX;
+            Graph.START_UNITS = cY - Graph.OY_MS * ratioY;
+            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === maxPPP || Graph.CurrentZoom === maxZoom) ? PPP : Graph.PX_PER_POINT + stepPPP;
+            Graph.SPEED += 0.1;
+            Graph.render();
         }
         else {
             Graph.CurrentZoom = (Graph.CurrentZoom < maxZoom) ? Graph.CurrentZoom + 1 : Graph.CurrentZoom;
