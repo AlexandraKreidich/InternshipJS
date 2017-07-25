@@ -171,7 +171,7 @@ var Graph = {
             Graph.OY_MS = (Graph.HEIGHT - 2 * Graph.MARGIN) * Graph.UNITS_PER_PIXEL;
             Graph.START_MS = cX - Graph.OX_MS * ratioX;
             Graph.START_UNITS = cY - Graph.OY_MS * ratioY;
-            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === maxPPP || Graph.CurrentZoom === maxZoom) ? PPP : Graph.PX_PER_POINT + stepPPP;
+            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === maxPPP || Graph.CurrentZoom === maxZoom) ? PPP : Graph.PX_PER_POINT + stepPPP; //масштабирование палочек
             Graph.SPEED += 0.1;
             Graph.render();
         }
@@ -180,7 +180,7 @@ var Graph = {
             Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
             Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
             Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
-            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === maxPPP || Graph.CurrentZoom === maxZoom) ? PPP : Graph.PX_PER_POINT + stepPPP;
+            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === maxPPP || Graph.CurrentZoom === maxZoom) ? PPP : Graph.PX_PER_POINT + stepPPP; //масштабирование палочек
             Graph.SPEED += 0.1;
             Graph.render();
         }
@@ -206,7 +206,7 @@ var Graph = {
             Graph.OY_MS = (Graph.HEIGHT - 2 * Graph.MARGIN) * Graph.UNITS_PER_PIXEL;
             Graph.START_MS = cX - Graph.OX_MS * ratioX;
             Graph.START_UNITS = cY - Graph.OY_MS * ratioY;
-            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === minPPP || Graph.CurrentZoom === minZoom) ? PPP : Graph.PX_PER_POINT - stepPPP;
+            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === minPPP || Graph.CurrentZoom === minZoom) ? PPP : Graph.PX_PER_POINT - stepPPP; //масштабирование палочек
             Graph.SPEED -= 0.1;
             Graph.render();
         }
@@ -215,7 +215,7 @@ var Graph = {
             Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
             Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
             Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
-            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === minPPP || Graph.CurrentZoom === minZoom) ? PPP : Graph.PX_PER_POINT - stepPPP;
+            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === minPPP || Graph.CurrentZoom === minZoom) ? PPP : Graph.PX_PER_POINT - stepPPP; //масштабирование палочек
             Graph.SPEED -= 0.1;
             Graph.render();
         }
