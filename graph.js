@@ -44,10 +44,6 @@ var Graph = {
 
     cursorPositionY: 0, //положение курсора по Y
 
-    cursorPositionXonWheel: 0, //положение курсора по Х при прокрутке колесиком
-
-    cursorPositionYonWheel: 0, //положение курсора по Y при прокрутке колесиком
-
     shiftX: 0, //сдвиг по ОХ
 
     shiftY: 0, //сдвиг по OY
@@ -152,20 +148,17 @@ var Graph = {
 
     //функция увеличения масштаба графика
     zoomIn: function (e, power, PPP, stepPPP, flag) {
-        var maxZoom = 15, //максимальный зум
+        var maxZoom = 20, //максимальный зум
             maxPPP = 150; //максимальная величина PIXEL_PER_POINT
         if (flag) {
             Graph.CurrentZoom = (Graph.CurrentZoom < maxZoom) ? Graph.CurrentZoom + 1 : Graph.CurrentZoom;
-            Graph.cursorPositionXonWheel = e.clientX - Graph.MARGIN;
-            Graph.cursorPositionYonWheel = Graph.realY(e.clientY);
 
-            var aX = Graph.cursorPositionXonWheel,
-                aY = Graph.cursorPositionYonWheel,
-                cX = Graph.START_MS + aX * Graph.MS_PER_PIXEL,
-                cY = Graph.START_UNITS + aY * Graph.UNITS_PER_PIXEL,
-                ratioX = aX / (Graph.WIDTH - 2 * Graph.MARGIN),
-                ratioY = aY / (Graph.HEIGHT - 2 * Graph.MARGIN);
-
+            var aX = e.clientX - Graph.MARGIN, //длинна от нуля до курсора по ОХ
+                aY = Graph.realY(e.clientY), //длинна от нуля до курсора по OY
+                cX = Graph.START_MS + aX * Graph.MS_PER_PIXEL, //координата курсора по ОХ
+                cY = Graph.START_UNITS + aY * Graph.UNITS_PER_PIXEL, //координата курсора по OY
+                ratioX = aX / (Graph.WIDTH - 2 * Graph.MARGIN), //отношение аХ к длинне оси ОХ
+                ratioY = aY / (Graph.HEIGHT - 2 * Graph.MARGIN); //отношение аY к длинне OY
 
             Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
             Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
@@ -190,10 +183,27 @@ var Graph = {
 
     //функция уменьшения масштаба графика
     zoomOut: function (e, power, PPP, stepPPP, flag) {
-        var minZoom = -15, //минимальный зум
+        var minZoom = -20, //минимальный зум
             minPPP = 80; //минимальная величина PIXEL_PER_POINT
         if (flag) {
-            console.log(e.deltaY);
+            Graph.CurrentZoom = (Graph.CurrentZoom > minZoom) ? Graph.CurrentZoom - 1 : Graph.CurrentZoom;
+
+            var aX = e.clientX - Graph.MARGIN, //длинна от нуля до курсора по ОХ
+                aY = Graph.realY(e.clientY), //длинна от нуля до курсора по OY
+                cX = Graph.START_MS + aX * Graph.MS_PER_PIXEL, //координата курсора по ОХ
+                cY = Graph.START_UNITS + aY * Graph.UNITS_PER_PIXEL, //координата курсора по OY
+                ratioX = aX / (Graph.WIDTH - 2 * Graph.MARGIN), //отношение аХ к длинне оси ОХ
+                ratioY = aY / (Graph.HEIGHT - 2 * Graph.MARGIN); //отношение аY к длинне OY
+
+            Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
+            Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
+            Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
+            Graph.OY_MS = (Graph.HEIGHT - 2 * Graph.MARGIN) * Graph.UNITS_PER_PIXEL;
+            Graph.START_MS = cX - Graph.OX_MS * ratioX;
+            Graph.START_UNITS = cY - Graph.OY_MS * ratioY;
+            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === minPPP || Graph.CurrentZoom === minZoom) ? PPP : Graph.PX_PER_POINT - stepPPP;
+            Graph.SPEED -= 0.1;
+            Graph.render();
         }
         else {
             Graph.CurrentZoom = (Graph.CurrentZoom > minZoom) ? Graph.CurrentZoom - 1 : Graph.CurrentZoom;
