@@ -2,12 +2,18 @@ var Data = {
 
     //подгрузка данных
     getDataFor: function (start, duration, f) {
-        Data.Request.getData('data.csv').then(function (response) {
-            Data.processData(response, start, duration, f);
-        });
+        if (Data.Cache.containsInterval(start, duration)) {
+            Data.Cache.getInterval(start, duration);
+        } else {
+            Data.Request.getData('data.csv').then(function (response) {
+                Data.processData(response, start, duration, f);
+                Data.Cache.save(response.x, response.y);
+            });
+        }
     },
 
     processData: function (data, start, duration, f) {
+        //console.log(data);
 
         var arrayX = [],
             arrayY = [],
@@ -108,5 +114,59 @@ var Data = {
         if (seconds < 10) seconds = '0' + seconds;
 
         return hours + ':' + minutes + ':' + seconds;
+    },
+
+    Cache: {
+        containsInterval: function (start, duration) {
+            return; //true/false
+        },
+
+        getInterval: function (start, duration) {
+
+            //получаем
+        },
+
+        save: function (X, Y) {
+            if (Data.Cache.Data.x.length === 0) {
+                Data.Cache.Data.x = X;
+                Data.Cache.Data.y = Y;
+                console.log(Data.Cache.Data);
+            }
+
+            else {
+                //console.log("есть");
+                console.log(Data.Cache.findPoint(
+                    1498000003719));
+            }
+        },
+
+        //находит точку и возвращает номер елемента массива для неё
+        //бинарный поиск
+        findPoint: function (point) {
+            var start = 0,
+                end = Data.Cache.Data.x.length,
+                mid = 0;
+            var i = 0;
+            while (start < end) {
+                console.log(mid);
+                i++;
+                if (i > 100) return -2;
+                mid = Math.floor((end - start) / 2);
+                if (point === Data.Cache.Data.x[mid])
+                    return mid;
+                else if (point > Data.Cache.Data.x[mid]) {
+                    end = mid;
+                }
+                else start = mid + 1;
+            }
+
+            return -1;
+        },
+
+        Data: {
+            x: [],
+            y: []
+        }
+
     }
 };
