@@ -55,14 +55,17 @@ var Graph = {
         Graph.tempCtx = Graph.tempCanvas.getContext('2d');
         Graph.ctx = Graph.canvas.getContext('2d');
         Graph.render();
-        window.addEventListener('resize', Graph.resize);
-        window.addEventListener('keydown', Graph.move);
-        window.addEventListener('keydown', Graph.zoom);
-        window.addEventListener('mousedown', Graph.onDown);
-        window.addEventListener('mouseup', Graph.onUp);
-        window.addEventListener('mousemove', Graph.onMove);
-        window.addEventListener('wheel', Graph.zoom);
-        window.addEventListener('dblclick', Graph.zoom);
+        window.addEventListener('resize', Graph.resize); //ctrl+'+'/'-'
+        window.addEventListener('keydown', Graph.move); //нажатие клавиши
+        window.addEventListener('keydown', Graph.zoom); //нажатие клавиши
+        window.addEventListener('mousedown', Graph.onDown); //нажатие кнопки мыши
+        window.addEventListener('mouseup', Graph.onUp); //отпускание кнопки мыши
+        window.addEventListener('mousemove', Graph.onMove); //движение мыши
+        window.addEventListener('wheel', Graph.zoom); //колесико мыши
+        window.addEventListener('dblclick', Graph.zoom); //даблклик мыши
+        window.addEventListener('touchstart', Graph.onDown); //тык пальцем по экрану
+        window.addEventListener('touchend', Graph.onUp); //отрыв пальчика от экрана
+        window.addEventListener('touchmove', Graph.onMove); //движение пальчиком по экрану
     },
 
     //функция получающая данные о размере экрана, и назначает размер холста
@@ -223,33 +226,57 @@ var Graph = {
 
     //функция для обрабочика событий при нажатии на ЛКМ
     onDown: function (e) {
-        if ((e.clientX - Graph.MARGIN) > 0 && (e.clientX - Graph.MARGIN) < Graph.WIDTH - 2 * Graph.MARGIN && Graph.realY(e.clientY) > 0 && Graph.realY(e.clientY) < Graph.HEIGHT - 2 * Graph.MARGIN) {
-            Graph.mouseFlag = true;
-            //console.log('туда');
-            Graph.cursorPositionX = e.clientX - Graph.MARGIN;
-            Graph.cursorPositionY = Graph.realY(e.clientY);
+        if(e.type === 'mousedown') {
+            if ((e.clientX - Graph.MARGIN) > 0 && (e.clientX - Graph.MARGIN) < Graph.WIDTH - 2 * Graph.MARGIN && Graph.realY(e.clientY) > 0 && Graph.realY(e.clientY) < Graph.HEIGHT - 2 * Graph.MARGIN) {
+                Graph.mouseFlag = true;
+                //console.log('туда');
+                Graph.cursorPositionX = e.clientX - Graph.MARGIN;
+                Graph.cursorPositionY = Graph.realY(e.clientY);
+            }
+        }
+        else if(e.type === 'touchstart'){
+            if ((e.touches[0].clientX - Graph.MARGIN) > 0 && (e.touches[0].clientX - Graph.MARGIN) < Graph.WIDTH - 2 * Graph.MARGIN && Graph.realY(e.touches[0].clientY) > 0 && Graph.realY(e.touches[0].clientY) < Graph.HEIGHT - 2 * Graph.MARGIN) {
+                Graph.mouseFlag = true;
+                //console.log('туда');
+                Graph.cursorPositionX = e.touches[0].clientX - Graph.MARGIN;
+                Graph.cursorPositionY = Graph.realY(e.touches[0].clientY);
+            }
         }
     },
 
     //функция для обработчика событий при отпускании ЛКМ
     onUp: function (e) {
-        Graph.mouseFlag = false;
-        Graph.cursorPositionX = e.clientX - Graph.MARGIN;
-        Graph.cursorPositionY = Graph.realY(e.clientY);
+        if(e.type === 'mouseup') {
+            Graph.mouseFlag = false;
+            Graph.cursorPositionX = e.clientX - Graph.MARGIN;
+            Graph.cursorPositionY = Graph.realY(e.clientY);
+        }
+        else if(e.type === 'touchend'){
+            Graph.mouseFlag = false;
+        }
     },
 
     //функция для обработчика событий при движении мыши
     onMove: function (e) {
-        // if(Graph.nowBuilding){
-        //     Graph.needsRedrawing = true;
-        //     return;
-        // }
-        if (Graph.mouseFlag) {
-            //console.log('x: ' + (e.clientX - Graph.MARGIN) + 'y: ' + Graph.realY(e.clientY));
-            var xMS = (e.clientX - Graph.MARGIN),
+        var xMS = 0,
+            yUN = 0;
+        if(e.type === 'mousemove') {
+            if (Graph.mouseFlag) {
+                //console.log('x: ' + (e.clientX - Graph.MARGIN) + 'y: ' + Graph.realY(e.clientY));
+                xMS = (e.clientX - Graph.MARGIN);
                 yUN = Graph.realY(e.clientY);
-            //console.log(x,y);
-            Graph.dragGraph(xMS, yUN);
+                //console.log(x,y);
+                Graph.dragGraph(xMS, yUN);
+            }
+        }
+        else if(e.type === 'touchmove'){
+            if (Graph.mouseFlag) {
+                //console.log('x: ' + (e.clientX - Graph.MARGIN) + 'y: ' + Graph.realY(e.clientY));
+                xMS = (e.touches[0].clientX - Graph.MARGIN);
+                yUN = Graph.realY(e.touches[0].clientY);
+                //console.log(x,y);
+                Graph.dragGraph(xMS, yUN);
+            }
         }
     },
 
