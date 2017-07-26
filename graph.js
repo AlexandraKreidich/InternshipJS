@@ -275,11 +275,20 @@ var Graph = {
     },
 
     // NE PONYATNO (вызов функций отрисовки графика и меток)
+    nowBuilding: false,
     buildData: function () {
+
+        if(Graph.nowBuilding) {
+
+            return;
+        }
+        Graph.nowBuilding = true;
+
         Data.getDataFor(this.START_MS, Graph.OX_MS, function (d, start) {
             Graph.buildLine(d);
             Graph.drawData(d, start);
             Graph.transferImageData();
+            Graph.nowBuilding = false;
         });
 
     },
