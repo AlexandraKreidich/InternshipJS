@@ -128,7 +128,7 @@ var Graph = {
             PPP = 100, //PIXEL_PER_POINT
             stepPPP = 10, //шаг приращения к PIXEL_PER_POINT
             key = (e.deltaY) ? e.type : e.keyCode;
-            key = (!key) ? e.type : key;
+        key = (!key) ? e.type : key;
 
         switch (key) {
             case plus :
@@ -171,7 +171,7 @@ var Graph = {
             Graph.OY_MS = (Graph.HEIGHT - 2 * Graph.MARGIN) * Graph.UNITS_PER_PIXEL;
             Graph.START_MS = cX - Graph.OX_MS * ratioX;
             Graph.START_UNITS = cY - Graph.OY_MS * ratioY;
-            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === maxPPP || Graph.CurrentZoom === maxZoom) ? PPP : Graph.PX_PER_POINT + stepPPP; //масштабирование палочек
+            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === maxPPP || Graph.CurrentZoom === maxZoom) ? PPP : Graph.PX_PER_POINT + stepPPP;
             Graph.SPEED += 0.1;
             Graph.render();
         }
@@ -180,7 +180,7 @@ var Graph = {
             Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
             Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
             Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
-            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === maxPPP || Graph.CurrentZoom === maxZoom) ? PPP : Graph.PX_PER_POINT + stepPPP; //масштабирование палочек
+            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === maxPPP || Graph.CurrentZoom === maxZoom) ? PPP : Graph.PX_PER_POINT + stepPPP;
             Graph.SPEED += 0.1;
             Graph.render();
         }
@@ -206,7 +206,7 @@ var Graph = {
             Graph.OY_MS = (Graph.HEIGHT - 2 * Graph.MARGIN) * Graph.UNITS_PER_PIXEL;
             Graph.START_MS = cX - Graph.OX_MS * ratioX;
             Graph.START_UNITS = cY - Graph.OY_MS * ratioY;
-            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === minPPP || Graph.CurrentZoom === minZoom) ? PPP : Graph.PX_PER_POINT - stepPPP; //масштабирование палочек
+            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === minPPP || Graph.CurrentZoom === minZoom) ? PPP : Graph.PX_PER_POINT - stepPPP;
             Graph.SPEED -= 0.1;
             Graph.render();
         }
@@ -215,7 +215,7 @@ var Graph = {
             Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
             Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
             Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
-            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === minPPP || Graph.CurrentZoom === minZoom) ? PPP : Graph.PX_PER_POINT - stepPPP; //масштабирование палочек
+            Graph.PX_PER_POINT = (Graph.PX_PER_POINT === minPPP || Graph.CurrentZoom === minZoom) ? PPP : Graph.PX_PER_POINT - stepPPP;
             Graph.SPEED -= 0.1;
             Graph.render();
         }
@@ -240,6 +240,10 @@ var Graph = {
 
     //функция для обработчика событий при движении мыши
     onMove: function (e) {
+        // if(Graph.nowBuilding){
+        //     Graph.needsRedrawing = true;
+        //     return;
+        // }
         if (Graph.mouseFlag) {
             //console.log('x: ' + (e.clientX - Graph.MARGIN) + 'y: ' + Graph.realY(e.clientY));
             var xMS = (e.clientX - Graph.MARGIN),
@@ -251,6 +255,7 @@ var Graph = {
 
     //передвижение графика
     dragGraph: function (x, y) {
+
         //console.log(Graph.cursorPositionX - x, Graph.cursorPositionY - y, x, y);
         Graph.shiftX += Math.abs(Graph.cursorPositionX - x);
         Graph.shiftY += Math.abs(Graph.cursorPositionY - y);
@@ -277,24 +282,22 @@ var Graph = {
     // NE PONYATNO (вызов функций отрисовки графика и меток)
     nowBuilding: false,
     buildData: function () {
-
-        if(Graph.nowBuilding) {
-
+        if (Graph.nowBuilding) {
             return;
         }
         Graph.nowBuilding = true;
-
         Data.getDataFor(this.START_MS, Graph.OX_MS, function (d, start) {
+            Graph.START_MS = start;
             Graph.buildLine(d);
             Graph.drawData(d, start);
             Graph.transferImageData();
             Graph.nowBuilding = false;
         });
-
     },
 
     //построение диаграммы
     buildLine: function (d) {
+        Graph.nowBuilding = true;
         //console.log(d/*, start*/);
         var l = d.x.length,
             ctx = Graph.tempCtx;
@@ -314,6 +317,7 @@ var Graph = {
         Graph.drawAxes();
         Graph.drawGrid();
         Graph.drawMarks();
+
     },
 
     //отрисовка меток времени и значений
