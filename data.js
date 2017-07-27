@@ -143,24 +143,23 @@ var Data = {
         //находит точку и возвращает номер елемента массива для неё
         //бинарный поиск
         findPoint: function (point) {
-            var start = 0,
-                end = Data.Cache.Data.x.length,
-                mid = 0;
-            var i = 0;
-            while (start < end) {
-                console.log(mid);
-                i++;
-                if (i > 100) return -2;
-                mid = Math.floor((end - start) / 2);
-                if (point === Data.Cache.Data.x[mid])
-                    return mid;
-                else if (point > Data.Cache.Data.x[mid]) {
-                    end = mid;
-                }
-                else start = mid + 1;
-            }
+                var start = 0,
+                    end = Data.Cache.Data.x.length - 1,
+                    midl = Math.floor((start + end)/2);
 
-            return -1;
+                while(start < end){
+                    if(point === Data.Cache.Data.x[midl]){
+                        return midl;
+                    }
+                    else if(point < Data.Cache.Data.x[midl]){
+                        end = midl;
+                    }
+                    else if(point > Data.Cache.Data.x[midl]){
+                        start = midl + 1;
+                    }
+                    midl = Math.floor((start + end)/2);
+                }
+                return -1;
         },
 
         Data: {
