@@ -136,36 +136,53 @@ var Data = {
             else {
                 //console.log("есть");
                 console.log(Data.Cache.findPoint(
-                    1498000003719));
+                    1498000001701, 'more'));
             }
         },
-
         //находит точку и возвращает номер елемента массива для неё
         //бинарный поиск
-        findPoint: function (point) {
-                var start = 0,
-                    end = Data.Cache.Data.x.length - 1,
-                    midl = Math.floor((start + end)/2);
+        findPoint: function (point, flag) {
+            var start = 0,
+                end = Data.Cache.Data.x.length - 1,
+                midF = Math.floor((start + end) / 2),
+                midS = Math.ceil((start + end) / 2);
 
-                while(start < end){
-                    if(point === Data.Cache.Data.x[midl]){
-                        return midl;
-                    }
-                    else if(point < Data.Cache.Data.x[midl]){
-                        end = midl;
-                    }
-                    else if(point > Data.Cache.Data.x[midl]){
-                        start = midl + 1;
-                    }
-                    midl = Math.floor((start + end)/2);
+            var i = 0;
+
+            while (start < end) {
+                i++;
+                if (i > 200) {
+                    return -1;
                 }
-                return -1;
+                if (midF === midS) midS += 1;
+                if (point === Data.Cache.Data.x[midF]) {
+                    return midF;
+                }
+                else if (point === Data.Cache.Data.x[midS]) {
+                    return midS;
+                }
+                else if (point < Data.Cache.Data.x[midF] && point < Data.Cache.Data.x[midS]) {
+                    end = midF;
+                }
+                else if (point > Data.Cache.Data.x[midF] && point > Data.Cache.Data.x[midS]) {
+                    start = midS + 1;
+                }
+                else {
+                    if (flag === 'less') {
+                        return midF;
+                    }
+                    else if (flag === 'more') {
+                        return midS;
+                    }
+                }
+                midF = Math.floor((start + end) / 2);
+                midS = Math.ceil((start + end) / 2);
+            }
         },
 
         Data: {
             x: [],
             y: []
         }
-
     }
 };
