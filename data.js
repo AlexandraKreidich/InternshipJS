@@ -155,29 +155,27 @@ var Data = {
                     return -1;
                 }
                 if (midF === midS) midS += 1;
-                if (point === Data.Cache.Data.x[midF]) {
-                    return midF;
-                }
-                else if (point === Data.Cache.Data.x[midS]) {
-                    return midS;
-                }
                 else if (point < Data.Cache.Data.x[midF] && point < Data.Cache.Data.x[midS]) {
                     end = midF;
                 }
                 else if (point > Data.Cache.Data.x[midF] && point > Data.Cache.Data.x[midS]) {
-                    start = midS + 1;
+                    start = midS;
                 }
                 else {
                     if (flag === 'less') {
                         return midF;
                     }
                     else if (flag === 'more') {
-                        return midS;
+                        if (Data.Cache.Data.x[midS + 1] === undefined)
+                            return midS;
+                        else
+                            return midS + 1;
                     }
                 }
                 midF = Math.floor((start + end) / 2);
                 midS = Math.ceil((start + end) / 2);
             }
+            return -1;
         },
 
         Data: {
