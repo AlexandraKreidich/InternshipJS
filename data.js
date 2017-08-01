@@ -134,9 +134,38 @@ var Data = {
             }
 
             else {
-                //console.log("есть");
-                console.log(Data.Cache.findPoint(
-                    1498000001701, 'more'));
+                var x_start = Data.Cache.findPoint(X[0], 'less'),
+                    x_end = Data.Cache.findPoint(X[X.length - 1], 'more'),
+                    tmp = {
+                        x: [],
+                        y: []
+                    };
+                if (x_start === -1 && x_end === -1) {
+                    Data.Cache.Data.x = X;
+                    Data.Cache.Data.y = Y;
+                }
+                else if (x_start === -1) {
+                    tmp.x = X;
+                    tmp.y = Y;
+                    tmp.x = Data.Cache.Data.x.slice(x_end, Data.Cache.Data.x.length);
+                    tmp.y = Data.Cache.Data.y.slice(x_end, Data.Cache.Data.y.length);
+                }
+                else if (x_end === -1) {
+                    tmp.x = Data.Cache.Data.x.slice(0, x_start + 1);
+                    tmp.y = Data.Cache.Data.y.slice(0, x_start + 1);
+                    tmp.x = tmp.x.concat(X);
+                    tmp.y = tmp.y.concat(Y);
+                }
+                else {
+                    tmp.x = Data.Cache.Data.x.slice(0, x_start + 1);
+                    tmp.y = Data.Cache.Data.y.slice(0, x_start + 1);
+                    tmp.x = tmp.x.concat(X);
+                    tmp.y = tmp.y.concat(Y);
+                    tmp.x = Data.Cache.Data.x.slice(x_end, Data.Cache.Data.x.length);
+                    tmp.y = Data.Cache.Data.y.slice(x_end, Data.Cache.Data.y.length);
+                }
+
+                Data.Cache.Data = tmp;
             }
         },
         //находит точку и возвращает номер елемента массива для неё
