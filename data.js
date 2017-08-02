@@ -272,7 +272,13 @@ var Data = {
                         //console.log(2);
                     }
                     else {
-                        return {first : midF, second: midS};
+                        if(point === X[midF]) {
+                            return {first: midF-1, second: midS};
+                        }
+                        else if (point === X[midS]){
+                            return {first: midF, second: midS+1};
+                        }
+                        else  return {first: midF, second: midS};
                     }
                     midF = Math.floor((start + end) / 2);
                     midS = Math.ceil((start + end) / 2);
