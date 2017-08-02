@@ -158,19 +158,22 @@ var Data = {
             else {
                 //console.log(2);
                 cond = 2;
-                var x_start = Data.Cache.findPoint(X[0]).first,
-                    x_end = Data.Cache.findPoint(X[X.length - 1]).second,
+                var x_start = this.findPoint(X[0]).first,
+                    x_end = this.findPoint(X[X.length - 1]).second,
                     tmp = {
                         x: [],
                         y: []
                     };
+
+
+
                 if (x_start === -1 && x_end === -1) {
                     // если записываемые данные содержат в себе отрезок, который уже существует
                     console.log(3);
                     cond = 3;
-                    this.Data.x = X;
-                    this.Data.y = Y;
-                    //console.log(Data.Cache.Data);
+                    tmp.x = X;
+                    tmp.y = Y;
+                    console.log(Data.Cache.Data);
                 }
                 else if (x_start === -1) {
                     //если записываемый отрезок строго правее данных в кэше
@@ -199,14 +202,17 @@ var Data = {
                     cond = 6;
 
                     tmp.x = this.Data.x.slice(0, x_start + 1);
-                    console.log(tmp.x[tmp.x.length-1], X[x_start]);
+
+                    console.log('x_start = ' + x_start + ' element in cache less than element = ' + this.Data.x[x_start] + ' element = ' + X[0]);
+                    console.log('last element in tmp = ' + tmp.x[tmp.x.length - 1]);
+
                     tmp.y = this.Data.y.slice(0, x_start + 1);
                     tmp.x = tmp.x.concat(X);
                     tmp.y = tmp.y.concat(Y);
                     tmp.x = tmp.x.concat(this.Data.x.slice(x_end, Data.Cache.Data.x.length));
                     tmp.y = tmp.y.concat(this.Data.y.slice(x_end, Data.Cache.Data.y.length));
                     //console.log(x_start, Data.Cache.Data.x.length, tmp.x.length);
-                    console.log(tmp.x[x_start+1], tmp.x[x_start+2]);
+                    //console.log(tmp.x[x_start+1], tmp.x[x_start+2]);
                 }
 
                 this.Data.x = tmp.x;
