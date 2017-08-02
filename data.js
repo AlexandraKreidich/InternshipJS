@@ -134,7 +134,7 @@ var Data = {
         save: function (X, Y) {
             //  console.log('L start = ' + Data.Cache.Data.x.length);
             var cond = 0;
-            var lstart = Data.Cache.Data.x.length
+            var lstart = Data.Cache.Data.x.length;
 
             // X - массив иксовых координат точек, которые нужно сохранить
             // Y - соответствующие иксам значения по оси игрек
@@ -147,20 +147,19 @@ var Data = {
 
 
             if (window.conds) window.conds = [];
-            if (Data.Cache.Data.x.length === 0) {
+            if (this.Data.x.length === 0) {
                 //если данных нет в кэше
                 console.log(1);
                 cond = 1;
-                Data.Cache.Data.x = X;
-                Data.Cache.Data.y = Y;
-                //console.log(1.1);
+                this.Data.x = X;
+                this.Data.y = Y;
             }
 
             else {
                 //console.log(2);
                 cond = 2;
-                var x_start = Data.Cache.findPoint(X[0], 'less'),
-                    x_end = Data.Cache.findPoint(X[X.length - 1], 'more'),
+                var x_start = Data.Cache.findPoint(X[0]).first,
+                    x_end = Data.Cache.findPoint(X[X.length - 1]).second,
                     tmp = {
                         x: [],
                         y: []
@@ -169,8 +168,8 @@ var Data = {
                     // если записываемые данные содержат в себе отрезок, который уже существует
                     console.log(3);
                     cond = 3;
-                    Data.Cache.Data.x = X;
-                    Data.Cache.Data.y = Y;
+                    this.Data.x = X;
+                    this.Data.y = Y;
                     //console.log(Data.Cache.Data);
                 }
                 else if (x_start === -1) {
@@ -179,34 +178,39 @@ var Data = {
                     cond = 4;
                     tmp.x = X;
                     tmp.y = Y;
-                    tmp.x = tmp.x.concat(Data.Cache.Data.x.slice(x_end, Data.Cache.Data.x.length));
-                    tmp.y = tmp.y.concat(Data.Cache.Data.y.slice(x_end, Data.Cache.Data.y.length));
+                    tmp.x = tmp.x.concat(this.Data.x.slice(x_end, this.Data.x.length));
+                    tmp.y = tmp.y.concat(this.Data.y.slice(x_end, this.Data.y.length));
                 }
                 else if (x_end === -1) {
                     //если записываемый отрезок строго левее данных в кэше
                     console.log(5);
                     cond = 5;
-                    tmp.x = Data.Cache.Data.x.slice(0, x_start + 1);
-                    tmp.y = Data.Cache.Data.y.slice(0, x_start + 1);
+                    tmp.x = this.Data.x.slice(0, x_start + 1);
+                    tmp.y = this.Data.y.slice(0, x_start + 1);
                     tmp.x = tmp.x.concat(X);
                     tmp.y = tmp.y.concat(Y);
                 }
                 else {
                     //записываемые данные пересекаются, но не содержат данные в кэше
                     console.log(6);
+                    console.log(x_start, x_end);
+
+
                     cond = 6;
 
-                    tmp.x = Data.Cache.Data.x.slice(0, x_start);
-                    tmp.y = Data.Cache.Data.y.slice(0, x_start);
+                    tmp.x = this.Data.x.slice(0, x_start + 1);
+                    console.log(tmp.x[tmp.x.length-1], X[x_start]);
+                    tmp.y = this.Data.y.slice(0, x_start + 1);
                     tmp.x = tmp.x.concat(X);
                     tmp.y = tmp.y.concat(Y);
-                    tmp.x = tmp.x.concat(Data.Cache.Data.x.slice(x_end + 1, Data.Cache.Data.x.length));
-                    tmp.y = tmp.y.concat(Data.Cache.Data.y.slice(x_end + 1, Data.Cache.Data.y.length));
+                    tmp.x = tmp.x.concat(this.Data.x.slice(x_end, Data.Cache.Data.x.length));
+                    tmp.y = tmp.y.concat(this.Data.y.slice(x_end, Data.Cache.Data.y.length));
                     //console.log(x_start, Data.Cache.Data.x.length, tmp.x.length);
+                    console.log(tmp.x[x_start+1], tmp.x[x_start+2]);
                 }
 
-                Data.Cache.Data.x = tmp.x;
-                Data.Cache.Data.y = tmp.y;
+                this.Data.x = tmp.x;
+                this.Data.y = tmp.y;
 
             }
             if (lstart > this.Data.x.length) {
@@ -234,7 +238,7 @@ var Data = {
             var i = 0;
             var X = Data.Cache.Data.x;
 
-            if (point <= mas[0]) {
+            if (point <= X[0]) {
                 if (point < X[0]) {
                     return {first: -1, second: 0};
                 }
