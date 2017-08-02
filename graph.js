@@ -328,7 +328,7 @@ var Graph = {
         //console.log(d/*, start*/);
         var l = d.x.length,
             ctx = Graph.tempCtx;
-        ctx.strokeStyle = '#0190ff';
+        ctx.strokeStyle = '#ff0efc';
         ctx.lineWidth = 1;
         ctx.beginPath();
         //console.log("start");

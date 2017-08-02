@@ -68,7 +68,7 @@ var Data = {
 
         //после отправки url получает просто текст из файла и отдаёт на обработку в следующую функцию
         getData: function (url) {
-            console.log('request');
+            //console.log('request');
             return Data.Request.get(url).then(Data.Request.parseData);
         },
 
@@ -126,6 +126,7 @@ var Data = {
 
         // проверяет наличие требуемого интервала в кэше (возвращает true/false)
         containsInterval: function (start, duration) {
+            //console.log(this.findPoint(start));
             if (this.findPoint(start).first !== -1 && this.findPoint(start + duration).second !== -1 && this.Data.x.length !== 0) {
                 return true;
             }
@@ -157,9 +158,9 @@ var Data = {
             // Y - соответствующие иксам значения по оси игрек
             // Мы хотим вставить X и Y в кеш, не разрушая упорядоченность точек.
 
-            var seed = 1498000000000;
-            console.log((X[0] - seed) + " ..(" + X.length + ").. " + (X[X.length - 1] - seed));
-            console.log((this.Data.x[0] - seed) + " ..(" + this.Data.x.length + ").. " + (this.Data.x[this.Data.x.length - 1] - seed));
+            // var seed = 1498000000000;
+            // console.log((X[0] - seed) + " ..(" + X.length + ").. " + (X[X.length - 1] - seed));
+            // console.log((this.Data.x[0] - seed) + " ..(" + this.Data.x.length + ").. " + (this.Data.x[this.Data.x.length - 1] - seed));
             //DEBUG
 
             if (window.conds) window.conds = [];
@@ -217,7 +218,7 @@ var Data = {
         //возвращает индекс элемента в кэшированном массиве, который является минимальным из всех, что строго больше переданного первым аргументом
         // (максимальным среди всех, что строго меньше)
         //бинарный поиск
-        findPoint: function (point, flag) {
+        findPoint: function (point) {
             //point - точка для которой мы ищем индекса, flag - флаг для отслеживания индекса(левое или правое)
 
             //левый конец (индекс) рассматриваемого на текущей итерации отрезка
