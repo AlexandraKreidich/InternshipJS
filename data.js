@@ -132,32 +132,24 @@ var Data = {
         },
 
         save: function (X, Y) {
-            //  console.log('L start = ' + Data.Cache.Data.x.length);
-            var cond = 0;
-            var lstart = Data.Cache.Data.x.length;
-
             // X - массив иксовых координат точек, которые нужно сохранить
             // Y - соответствующие иксам значения по оси игрек
-
             // Мы хотим вставить X и Y в кеш, не разрушая упорядоченность точек.
 
             var seed = 1498000000000;
             console.log((X[0] - seed) + " ..(" + X.length + ").. " + (X[X.length - 1] - seed));
             console.log((this.Data.x[0] - seed) + " ..(" + this.Data.x.length + ").. " + (this.Data.x[this.Data.x.length - 1] - seed));
-
+            //DEBUG
 
             if (window.conds) window.conds = [];
             if (this.Data.x.length === 0) {
                 //если данных нет в кэше
-                console.log(1);
-                cond = 1;
+                //console.log(1);
                 this.Data.x = X;
                 this.Data.y = Y;
             }
 
             else {
-                //console.log(2);
-                cond = 2;
                 var x_start = this.findPoint(X[0]).first,
                     x_end = this.findPoint(X[X.length - 1]).second,
                     tmp = {
@@ -165,20 +157,15 @@ var Data = {
                         y: []
                     };
 
-
-
                 if (x_start === -1 && x_end === -1) {
                     // если записываемые данные содержат в себе отрезок, который уже существует
-                    console.log(3);
-                    cond = 3;
+                    //console.log(2);
                     tmp.x = X;
                     tmp.y = Y;
-                    console.log(Data.Cache.Data);
                 }
                 else if (x_start === -1) {
                     //если записываемый отрезок строго правее данных в кэше
-                    console.log(4);
-                    cond = 4;
+                    //console.log(3);
                     tmp.x = X;
                     tmp.y = Y;
                     tmp.x = tmp.x.concat(this.Data.x.slice(x_end, this.Data.x.length));
@@ -186,8 +173,7 @@ var Data = {
                 }
                 else if (x_end === -1) {
                     //если записываемый отрезок строго левее данных в кэше
-                    console.log(5);
-                    cond = 5;
+                    //console.log(4);
                     tmp.x = this.Data.x.slice(0, x_start + 1);
                     tmp.y = this.Data.y.slice(0, x_start + 1);
                     tmp.x = tmp.x.concat(X);
@@ -195,34 +181,16 @@ var Data = {
                 }
                 else {
                     //записываемые данные пересекаются, но не содержат данные в кэше
-                    console.log(6);
-                    console.log(x_start, x_end);
-
-
-                    cond = 6;
-
+                    //console.log(5);
                     tmp.x = this.Data.x.slice(0, x_start + 1);
-
-                    console.log('x_start = ' + x_start + ' element in cache less than element = ' + this.Data.x[x_start] + ' element = ' + X[0]);
-                    console.log('last element in tmp = ' + tmp.x[tmp.x.length - 1]);
-
                     tmp.y = this.Data.y.slice(0, x_start + 1);
                     tmp.x = tmp.x.concat(X);
                     tmp.y = tmp.y.concat(Y);
                     tmp.x = tmp.x.concat(this.Data.x.slice(x_end, Data.Cache.Data.x.length));
                     tmp.y = tmp.y.concat(this.Data.y.slice(x_end, Data.Cache.Data.y.length));
-                    //console.log(x_start, Data.Cache.Data.x.length, tmp.x.length);
-                    //console.log(tmp.x[x_start+1], tmp.x[x_start+2]);
                 }
-
                 this.Data.x = tmp.x;
                 this.Data.y = tmp.y;
-
-            }
-            if (lstart > this.Data.x.length) {
-
-
-                console.log("L final = " + this.Data.x.length + " Condition: " + cond);
             }
         },
         //возвращает индекс элемента в кэшированном массиве, который является минимальным из всех, что строго больше переданного первым аргументом
