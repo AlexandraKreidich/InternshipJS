@@ -3,7 +3,7 @@ var Data = {
     //подгрузка данных
     getDataFor: function (start, duration, f) {
         if (Data.Cache.containsInterval(start, duration)) {
-            Data.Cache.getInterval(start, duration);
+            f(Data.Cache.getInterval(start, duration), start);
         } else {
             Data.Request.getData('data.csv').then(function (response) {
                 Data.processData(response, start, duration, f);
@@ -68,6 +68,7 @@ var Data = {
 
         //после отправки url получает просто текст из файла и отдаёт на обработку в следующую функцию
         getData: function (url) {
+            console.log('request');
             return Data.Request.get(url).then(Data.Request.parseData);
         },
 
@@ -122,13 +123,33 @@ var Data = {
     },
 
     Cache: {
+
+        // проверяет наличие требуемого интервала в кэше (возвращает true/false)
         containsInterval: function (start, duration) {
-            return; //true/false
+            if (this.findPoint(start).first !== -1 && this.findPoint(start + duration).second !== -1 && this.Data.x.length !== 0) {
+                return true;
+            }
+            return false;
         },
 
+        //получаем заданный интервал из кэша
         getInterval: function (start, duration) {
+            var l = this.Data.x.length,
+                arrayX = [],
+                arrayY = [],
+                end = start + duration;
 
-            //получаем
+            for (var i = 0; i < l; i++) {
+                if (this.Data.x[i] >= start && this.Data.x[i] <= end) {
+                    arrayX.push(this.Data.x[i] - start);
+                    arrayY.push(this.Data.y[i]);
+                }
+            }
+
+            var x = new Int32Array(arrayX),
+                y = new Int32Array(arrayY);
+
+            return {x: x, y: y};
         },
 
         save: function (X, Y) {
@@ -246,13 +267,13 @@ var Data = {
                         //console.log(2);
                     }
                     else {
-                        if(point === X[midF]) {
-                            return {first: midF-1, second: midS};
+                        if (point === X[midF]) {
+                            return {first: midF - 1, second: midS};
                         }
-                        else if (point === X[midS]){
-                            return {first: midF, second: midS+1};
+                        else if (point === X[midS]) {
+                            return {first: midF, second: midS + 1};
                         }
-                        else  return {first: midF, second: midS};
+                        else return {first: midF, second: midS};
                     }
                     midF = Math.floor((start + end) / 2);
                     midS = Math.ceil((start + end) / 2);
