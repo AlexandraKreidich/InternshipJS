@@ -30,7 +30,9 @@ var Data = {
         var x = new Int32Array(arrayX),
             y = new Int32Array(arrayY);
 
-        arrayX = arrayX.map(function(e){return e+start;});
+        arrayX = arrayX.map(function (e) {
+            return e + start;
+        });
         Data.Cache.save(arrayX, arrayY);
 
         f({
@@ -140,11 +142,11 @@ var Data = {
             // Мы хотим вставить X и Y в кеш, не разрушая упорядоченность точек.
 
             var seed = 1498000000000;
-            console.log((X[0]-seed)+" ..("+X.length+").. "+(X[X.length-1]-seed));
-            console.log((this.Data.x[0]-seed)+" ..("+this.Data.x.length+").. "+(this.Data.x[this.Data.x.length-1]-seed));
+            console.log((X[0] - seed) + " ..(" + X.length + ").. " + (X[X.length - 1] - seed));
+            console.log((this.Data.x[0] - seed) + " ..(" + this.Data.x.length + ").. " + (this.Data.x[this.Data.x.length - 1] - seed));
 
 
-            if(window.conds ) window.conds=[];
+            if (window.conds) window.conds = [];
             if (Data.Cache.Data.x.length === 0) {
                 //если данных нет в кэше
                 console.log(1);
@@ -198,8 +200,8 @@ var Data = {
                     tmp.y = Data.Cache.Data.y.slice(0, x_start);
                     tmp.x = tmp.x.concat(X);
                     tmp.y = tmp.y.concat(Y);
-                    tmp.x = tmp.x.concat(Data.Cache.Data.x.slice(x_end+1, Data.Cache.Data.x.length));
-                    tmp.y = tmp.y.concat(Data.Cache.Data.y.slice(x_end+1, Data.Cache.Data.y.length));
+                    tmp.x = tmp.x.concat(Data.Cache.Data.x.slice(x_end + 1, Data.Cache.Data.x.length));
+                    tmp.y = tmp.y.concat(Data.Cache.Data.y.slice(x_end + 1, Data.Cache.Data.y.length));
                     //console.log(x_start, Data.Cache.Data.x.length, tmp.x.length);
                 }
 
@@ -207,18 +209,17 @@ var Data = {
                 Data.Cache.Data.y = tmp.y;
 
             }
-            if(lstart > this.Data.x.length) {
+            if (lstart > this.Data.x.length) {
 
 
-
-                console.log("L final = " + this.Data.x.length+" Condition: "+cond);
+                console.log("L final = " + this.Data.x.length + " Condition: " + cond);
             }
         },
         //возвращает индекс элемента в кэшированном массиве, который является минимальным из всех, что строго больше переданного первым аргументом
         // (максимальным среди всех, что строго меньше)
         //бинарный поиск
         findPoint: function (point, flag) {
-                //point - точка для которой мы ищем индекса, flag - флаг для отслеживания индекса(левое или правое)
+            //point - точка для которой мы ищем индекса, flag - флаг для отслеживания индекса(левое или правое)
 
             //левый конец (индекс) рассматриваемого на текущей итерации отрезка
             var start = 0,
@@ -233,41 +234,47 @@ var Data = {
             var i = 0;
             var X = Data.Cache.Data.x;
 
-
-            while (start < end) {
-                i++;
-                if (i > 200) {
-                    //console.log('fh');
-                    return -1;
+            if (point <= mas[0]) {
+                if (point < X[0]) {
+                    return {first: -1, second: 0};
                 }
-                if (midF === midS) {
-                    //console.log(midF, midS)
-                    midS += 1;
-                }
-                if (point < X[midF]) {
-                    //console.log(1)
-                    end = midF;
-                }
-                else if (point > X[midS]) {
-                    start = midS;
-                    //console.log(2);
+                return {first: -1, second: 1};
+            }
+            else if (point >= X[X.length - 1]) {
+                if (point > X[X.length - 1]) {
+                    return {first: X.length - 1, second: -1};
                 }
                 else {
-                    //return {first : midF, last: midS}
-                    if (flag === 'less') {
-                        return midF;
-                    }
-                    else if (flag === 'more') {
-                        // if (X[midS + 1] === undefined)
-                        //     return midS;
-                        // else
-                            return midS;
-                    }
+                    return {first: X.length - 2, second: -1};
                 }
-                midF = Math.floor((start + end) / 2);
-                midS = Math.ceil((start + end) / 2);
             }
-            return -1;
+            else {
+                while (start < end) {
+                    i++;
+                    if (i > 200) {
+                        //console.log('fh');
+                        return -1;
+                    }
+                    if (midF === midS) {
+                        //console.log(midF, midS)
+                        midS += 1;
+                    }
+                    if (point < X[midF]) {
+                        //console.log(1)
+                        end = midF;
+                    }
+                    else if (point > X[midS]) {
+                        start = midS;
+                        //console.log(2);
+                    }
+                    else {
+                        return {first : midF, second: midS};
+                    }
+                    midF = Math.floor((start + end) / 2);
+                    midS = Math.ceil((start + end) / 2);
+                }
+                return -1;
+            }
         },
 
         Data: {
