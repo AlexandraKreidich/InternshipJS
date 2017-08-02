@@ -209,6 +209,8 @@ var Data = {
             }
             if(lstart > this.Data.x.length) {
 
+
+
                 console.log("L final = " + this.Data.x.length+" Condition: "+cond);
             }
         },
