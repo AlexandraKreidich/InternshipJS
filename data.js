@@ -261,8 +261,8 @@ var Data = {
                 while (start < end) {
                     i++;
                     if (i > 200) {
-                        //console.log('fh');
-                        return -1;
+                        console.error('Number of operations exceeded');
+                        return -2;
                     }
                     if (midF === midS) {
                         //console.log(midF, midS)
