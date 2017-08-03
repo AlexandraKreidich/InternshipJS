@@ -28,7 +28,7 @@ var Graph = {
 
     START_UNITS: 0,//9000, //значение в точке 0 по OY
 
-    START_MS: 1498000010000,//1500379393330, //значение в точке 0 по OX
+    START_MS: 1498029923327,//1500379393330, //значение в точке 0 по OX
 
     INIT_MS_PER_PIXEL: 1000, //фиксированный масштаб по ОХ
 
@@ -329,7 +329,7 @@ var Graph = {
         var l = d.x.length,
             ctx = Graph.tempCtx;
         ctx.strokeStyle = '#ff0efc';
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 2;
         ctx.beginPath();
         //console.log("start");
         ctx.moveTo(Graph.tsToX(d.x[0]), Graph.unitsToY(d.y[0] - Graph.START_UNITS));

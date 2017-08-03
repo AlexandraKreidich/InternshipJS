@@ -33,7 +33,9 @@ var Data = {
         arrayX = arrayX.map(function (e) {
             return e + start;
         });
+
         Data.Cache.save(arrayX, arrayY);
+        Data.WebSQL.saveToDB(arrayX, arrayY);
 
         f({
             x: x,
@@ -291,6 +293,61 @@ var Data = {
         Data: {
             x: [],
             y: []
+        }
+    },
+
+    WebSQL: {
+
+        db: null,
+
+        saveToDB: function (X, Y) {
+            this.db = openDatabase("Points", "", "Points", 5 * 1024 * 1024);
+            if (!this.db) {
+                alert("Failed to connect to database.");
+            }
+            if (this.db.version !== "2") {
+                this.db.changeVersion(this.db.version, this.db.version+1, function (tx) {
+                    tx.executeSql('DROP TABLE POINTS');
+                    tx.executeSql("CREATE TABLE IF NOT EXISTS POINTS (point INTEGER, value INTEGER)", [], function (result) {
+                        console.log(result);
+                    }, function (tx,error) {
+                        console.log(error);
+                    });
+                    tx.executeSql("INSERT INTO POINTS (point, value) VALUES (?, ?)", [3, 4],function (result) {
+                        console.log(result);
+                    }, function (tx,error) {
+                        console.log(error);
+                    });
+                }, null, null);
+                this.db.transaction(function (tx) {
+                    tx.executeSql('SELECT * FROM POINTS', [], function (tx, result) {
+                        console.log('kdvnf');
+                        var len = result.rows.length;
+                        console.log(len);
+                        for (var i = 0; i < len; i++){
+                            console.log(result.rows.item(i));
+                        }
+                    }, function (tx, error) {
+                        console.log(error);
+                    });
+                });
+            }
+            else {
+                console.log('been here!');
+                console.log(this.db);
+                this.db.transaction(function (tx) {
+                    tx.executeSql('SELECT * FROM POINTS', [], function (tx, result) {
+                        console.log('kdvnf');
+                        var len = result.rows.length;
+                        console.log(len);
+                        for (var i = 0; i < len; i++){
+                            console.log(result.rows.item(i).point + ' ' + result.rows.item(i).value);
+                        }
+                    }, function (tx, error) {
+                        console.log(error);
+                    });
+                });
+            }
         }
     }
 };
