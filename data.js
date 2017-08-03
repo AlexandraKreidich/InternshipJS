@@ -128,11 +128,6 @@ var Data = {
     Cache: {
         // проверяет наличие требуемого интервала в кэше (возвращает true/false)
         containsInterval: function (start, duration) {
-            //console.log(this.findPoint(start));
-            // if (this.findPoint(start).first !== -1 && this.findPoint(start + duration).second !== -1 && this.Data.x.length !== 0) {
-            //     return true;
-            // }
-            // return false;
             return this.findPoint(start).first !== -1 && this.findPoint(start + duration).second !== -1 && this.Data.x.length !== 0;
         },
 
