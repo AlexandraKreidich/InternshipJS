@@ -6,9 +6,9 @@ var Data = {
             f(Data.Cache.getInterval(start, duration), start);
         }
         else {
-            if(){
-
-            }
+            // if(){
+            //
+            // }
             Data.Request.getData('data.csv').then(function (response) {
                 Data.processData(response, start, duration, f);
                 //console.log(Data.Cache.Data);
@@ -340,7 +340,7 @@ var Data = {
                     console.log(error);
                 });
             });
-        },
+        }
 
 
     }
