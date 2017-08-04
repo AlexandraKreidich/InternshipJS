@@ -6,6 +6,9 @@ var Data = {
             f(Data.Cache.getInterval(start, duration), start);
         }
         else {
+            if(){
+
+            }
             Data.Request.getData('data.csv').then(function (response) {
                 Data.processData(response, start, duration, f);
                 //console.log(Data.Cache.Data);
@@ -35,7 +38,7 @@ var Data = {
         });
 
         Data.Cache.save(arrayX, arrayY);
-        Data.WebSQL.saveToDB(arrayX, arrayY);
+        Data.WebSQL.connectToDB(arrayX, arrayY);
 
         f({
             x: x,
@@ -300,7 +303,8 @@ var Data = {
 
         db: null,
 
-        saveToDB: function (X, Y) {
+        //проверка на подключение к базе данных  сохранение информации
+        connectToDB: function (X, Y) {
             this.db = openDatabase("Points", "", "Points", 5 * 1024 * 1024);
             if (!this.db) {
                 alert("Failed to connect to database.");
@@ -311,25 +315,33 @@ var Data = {
                     tx.executeSql("CREATE TABLE IF NOT EXISTS POINTS (point INTEGER, value INTEGER)", [], null, function (tx, error) {
                         console.log(error);
                     });
-                    tx.executeSql("INSERT INTO POINTS (point, value) VALUES (?, ?)", [3, 4], null, function (tx, error) {
-                        console.log(error);
-                    });
+                    Data.WebSQL.saveToDB(X, Y);
                 }, null, null);
             }
             else {
-                //console.log('been here!');
-                console.log(this.db);
-                this.db.transaction(function (tx) {
-                    tx.executeSql('SELECT * FROM POINTS', [], function (tx, result) {
-                        var len = result.rows.length;
-                        for (var i = 0; i < len; i++) {
-                            console.log(result.rows.item(i).point + ' ' + result.rows.item(i).value);
-                        }
-                    }, function (tx, error) {
+                this.saveToDB(X, Y);
+            }
+        },
+
+        saveToDB: function (X, Y) {
+            var len = X.length;
+            this.db.transaction(function (tx) {
+                for (var i = 0; i < len; i++) {
+                    tx.executeSql("INSERT INTO POINTS (point, value) VALUES (?, ?)", [X[i], Y[i]], null, function (tx, error) {
                         console.log(error);
                     });
+                }
+                tx.executeSql('SELECT * FROM POINTS', [], function (tx, result) {
+                    var len = result.rows.length;
+                    for (var i = 0; i < len; i++) {
+                        console.log(result.rows.item(i).point + ' ' + result.rows.item(i).value);
+                    }
+                }, function (tx, error) {
+                    console.log(error);
                 });
-            }
-        }
+            });
+        },
+
+
     }
 };
