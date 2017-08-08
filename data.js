@@ -1,17 +1,26 @@
 var Data = {
 
+    points_X: [],
+
     // подгрузка данных
     getDataFor: function (start, duration, f) {
+
+        Data.WebSQL.db = openDatabase("Points", "", "Points", 5 * 1024 * 1024);
+        if (!Data.WebSQL.db) {
+            alert("Failed to connect to database.");
+        }
+
+        Data.WebSQL.copyToCache();
+
         if (Data.Cache.containsInterval(start, duration)) {
+            console.log('cache');
             f(Data.Cache.getInterval(start, duration), start);
         }
         else {
-            // if(){
-            //
-            // }
             Data.Request.getData('data.csv').then(function (response) {
+                console.log('request');
                 Data.processData(response, start, duration, f);
-                //console.log(Data.Cache.Data);
+                console.log(Data.Cache.Data.x.length);
             });
         }
     },
@@ -22,6 +31,9 @@ var Data = {
             arrayY = [],
             end = start + duration,
             l = data.x.length;
+
+        Data.points_X = data.x;
+        console.log(Data.points_X.length);
 
         for (var i = 0; i < l; i++) {
             if (data.x[i] >= start && data.x[i] <= end) {
@@ -305,10 +317,6 @@ var Data = {
 
         //проверка на подключение к базе данных  сохранение информации
         connectToDB: function (X, Y) {
-            this.db = openDatabase("Points", "", "Points", 5 * 1024 * 1024);
-            if (!this.db) {
-                alert("Failed to connect to database.");
-            }
             if (this.db.version !== "1") {
                 this.db.changeVersion(this.db.version, "1", function (tx) {
                     tx.executeSql('DROP TABLE POINTS');
@@ -331,17 +339,51 @@ var Data = {
                         console.log(error);
                     });
                 }
-                tx.executeSql('SELECT * FROM POINTS', [], function (tx, result) {
+                // tx.executeSql('SELECT * FROM POINTS', [], function (tx, result) {
+                //     var len = result.rows.length;
+                //     for (var i = 0; i < len; i++) {
+                //         console.log(result.rows.item(i).point + ' ' + result.rows.item(i).value);
+                //     }
+                // }, function (tx, error) {
+                //     console.log(error);
+                // });
+            });
+        },
+
+        copyToCache: function () {
+            this.db.transaction(function (tx) {
+                var tmp = [];
+
+                tx.executeSql('SELECT distinct point, value FROM POINTS', [], function (tx, result) {
                     var len = result.rows.length;
                     for (var i = 0; i < len; i++) {
-                        console.log(result.rows.item(i).point + ' ' + result.rows.item(i).value);
+                        //console.log(result.rows.item(i).point + ' ' + result.rows.item(i).value);
+                        // tmp.x[i] = result.rows.item(i).point;
+                        // tmp.y[i] = result.rows.item(i).value;
+
+                        tmp[i] = {x: result.rows.item(i).point, y: result.rows.item(i).value};
+
+                        //нужно отсортировать по возрастанию x!
+                        //потому что из базы они могут попасть не отсортированные
+                        //вопрос в том, как два массива отсортировать параллельно
+                        // Data.Cache.Data.x = tmp.x;
+                        // Data.Cache.Data.y = tmp.y;
+                    }
+                    tmp.sort(function (a, b) {
+                        return a.x - b.x;
+                    });
+                    //console.log(tmp);
+                    for (i = 0; i < len; i++) {
+                        Data.Cache.Data.x[i] = tmp[i].x;
+                        Data.Cache.Data.y[i] = tmp[i].y;
                     }
                 }, function (tx, error) {
                     console.log(error);
                 });
-            });
-        }
 
+            });
+            //console.log(Data.Cache.Data);
+        }
 
     }
 };
