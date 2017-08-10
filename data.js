@@ -8,9 +8,9 @@ var Data = {
         // если нету то делаем AJAX запрос:
         // сохраняем эти данные в кеш и в БД
 
-        //проверяем наличие БД и создаем ее если неду доступной версии
+        // проверяем наличие БД и создаем ее если неду доступной версии
         if (Data.WebSQL.dataBase === null) {
-            Data.WebSQL.intiDataBase().then(Data.WebSQL.connectToDB).then(Data.WebSQL.copyToCache).then(Data.Request.interactionToCache(start, duration, f));
+            Data.WebSQL.intiDataBase().then(Data.WebSQL.createTable).then(Data.WebSQL.copyToCache).then(Data.Request.interactionToCache(start, duration, f));
         }
         else {
             Data.Request.interactionToCache(start, duration, f);
@@ -103,7 +103,9 @@ var Data = {
             };
         },
 
+        // проверяет наличие запрашиваемых данных в кеше, если нет, то делает запрос на сервер
         interactionToCache: function (start, duration, f) {
+            console.log('4 - запрос на сервер, если не нашло нужные данные');
             if (Data.Cache.containsInterval(start, duration)) {
                 console.log('cache');
                 f(Data.Cache.getInterval(start, duration), start);
@@ -315,7 +317,7 @@ var Data = {
         }
     },
 
-    //пространство для работы с WebSQL - DataBase;
+    // пространство для работы с WebSQL - DataBase;
     WebSQL: {
 
         // память базы данных
@@ -324,8 +326,9 @@ var Data = {
         // база данных
         dataBase: null,
 
-        //создает базу данных или подключается к существующей
+        // создает базу данных или подключается к существующей
         intiDataBase: function () {
+            console.log('1 - подключение к БД');
             return new Promise(function (resolve, reject) {
                 if (Data.WebSQL.dataBase === null) {
                     Data.WebSQL.dataBase = openDatabase("Points", "", "Points", this.MEMORY);
@@ -333,13 +336,14 @@ var Data = {
                         console.error("Failed to connect!");
                     }
                     // + создаем таблицу с данными
-                    resolve(); //Data.WebSQL.connectToDB();
+                    resolve(); //Data.WebSQL.createTable();
                 }
             });
         },
 
-        //подключение к базе данных
-        connectToDB: function () {
+        // создает таблицу
+        createTable: function () {
+            console.log('2 - создание таблицы');
             return new Promise(function (resolve, reject) {
                 if (Data.WebSQL.dataBase.version !== '0.1') {
                     Data.WebSQL.dataBase.changeVersion(Data.WebSQL.dataBase.version, '0.1', function (tx) {
@@ -372,6 +376,7 @@ var Data = {
 
         // копирует данные из БД в кеш
         copyToCache: function () {
+            console.log('3 - копирование данных их БД в кеш');
             return new Promise(function (resolve, reject) {
                 Data.WebSQL.dataBase.transaction(function (tx) {
                     var tmp = [];
@@ -399,7 +404,7 @@ var Data = {
             });
         },
 
-        //функция сохранения в базу данных
+        // функция сохранения в базу данных
         save: function (X, Y) {
             var l = X.length;
             Data.WebSQL.dataBase.transaction(function (tx) {
