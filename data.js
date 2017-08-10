@@ -10,7 +10,9 @@ var Data = {
 
         // проверяем наличие БД и создаем ее если неду доступной версии
         if (Data.WebSQL.dataBase === null) {
-            Data.WebSQL.intiDataBase().then(Data.WebSQL.createTable).then(Data.WebSQL.copyToCache).then(Data.Request.interactionToCache(start, duration, f));
+            Data.WebSQL.intiDataBase().then(Data.WebSQL.createTable).then(Data.WebSQL.copyToCache).then(function () {
+                Data.Request.interactionToCache(start, duration, f)
+            });
         }
         else {
             Data.Request.interactionToCache(start, duration, f);
@@ -105,13 +107,15 @@ var Data = {
 
         // проверяет наличие запрашиваемых данных в кеше, если нет, то делает запрос на сервер
         interactionToCache: function (start, duration, f) {
-            console.log('4 - запрос на сервер, если не нашло нужные данные');
+            //console.log("4");
             if (Data.Cache.containsInterval(start, duration)) {
-                console.log('cache');
+                //console.log("проверка на содержание интервала в кеше");
+                //console.log('cache');
                 f(Data.Cache.getInterval(start, duration), start);
             }
             else {
                 Data.Request.getData('data.csv').then(function (response) {
+                    //console.log('4 - запрос на сервер, если не нашло нужные данные');
                     console.log('request');
                     Data.processData(response, start, duration, f);
                     //console.log(Data.Cache.Data.x.length);
@@ -328,7 +332,7 @@ var Data = {
 
         // создает базу данных или подключается к существующей
         intiDataBase: function () {
-            console.log('1 - подключение к БД');
+            //console.log('1 - подключение к БД');
             return new Promise(function (resolve, reject) {
                 if (Data.WebSQL.dataBase === null) {
                     Data.WebSQL.dataBase = openDatabase("Points", "", "Points", this.MEMORY);
@@ -343,12 +347,12 @@ var Data = {
 
         // создает таблицу
         createTable: function () {
-            console.log('2 - создание таблицы');
+            //console.log('2 - создание таблицы');
             return new Promise(function (resolve, reject) {
-                if (Data.WebSQL.dataBase.version !== '0.1') {
-                    Data.WebSQL.dataBase.changeVersion(Data.WebSQL.dataBase.version, '0.1', function (tx) {
-                        console.log('Connection completed');
-                        console.log('version : "' + Data.WebSQL.dataBase.version + '"');
+                if (Data.WebSQL.dataBase.version !== '1') {
+                    Data.WebSQL.dataBase.changeVersion(Data.WebSQL.dataBase.version, '1', function (tx) {
+                        //console.log('Connection completed');
+                        //console.log('version : "' + Data.WebSQL.dataBase.version + '"');
                         Data.WebSQL.dataBase.transaction(function (tx) {
                             tx.executeSql('DROP TABLE IF EXISTS DATA', [],
                                 function () {
@@ -366,8 +370,8 @@ var Data = {
                     });
                 }
                 else {
-                    console.log('Already exist!');
-                    console.log('version : "' + Data.WebSQL.dataBase.version + '"');
+                    // console.log('Already exist!');
+                    // console.log('version : "' + Data.WebSQL.dataBase.version + '"');
                     resolve(); //this.copyToCache()
 
                 }
@@ -376,7 +380,7 @@ var Data = {
 
         // копирует данные из БД в кеш
         copyToCache: function () {
-            console.log('3 - копирование данных их БД в кеш');
+            //console.log('3 - копирование данных их БД в кеш');
             return new Promise(function (resolve, reject) {
                 Data.WebSQL.dataBase.transaction(function (tx) {
                     var tmp = [];
@@ -394,7 +398,7 @@ var Data = {
                                 Data.Cache.Data.x[i] = tmp[i].x;
                                 Data.Cache.Data.y[i] = tmp[i].y;
                             }
-                            console.log(Data.Cache.Data);
+                            //console.log(Data.Cache.Data);
                             resolve(); // Data.Request.interactionToCache(start, duration, f))
                         },
                         function (tx, error) {
