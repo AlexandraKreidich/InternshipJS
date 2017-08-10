@@ -2,39 +2,19 @@ var Data = {
 
     // подгрузка данных
     getDataFor: function (start, duration, f) {
-        //копировать все что есть в БД в кеш
-        //проверяем наличие нужного отрезка в кеше
-        //если есть то берем из кеша,
-        // если нету то AJAX:
-        //сохраняем эти данные в кеш и в БД
+        // копируем все что есть в базе данных в кеш
+        // проверяем наличие нужного отрезка в кеше
+        // если есть то берем из кеша,
+        // если нету то делаем AJAX запрос:
+        // сохраняем эти данные в кеш и в БД
 
-        //проверяем наличие БД и создали ее если неду доступной версии
-        if (Data.WebSQL.db === null) {
-            Data.WebSQL.db = openDatabase("Points", "", "Points", this.MEMORY);
-            if (Data.WebSQL.db === null) {
-                console.error("Failed to connect!");
-            }
-            // + создаем таблицу с данными
-            Data.WebSQL.connectToDB();
+        //проверяем наличие БД и создаем ее если неду доступной версии
+        if (Data.WebSQL.dataBase === null) {
+            Data.WebSQL.intiDataBase().then(Data.WebSQL.connectToDB).then(Data.WebSQL.copyToCache).then(Data.Request.interactionToCache(start, duration, f));
         }
-
-        // var dbS = openDatabase("NEW", "", "Points", this.MEMORY);
-        // dbS.transaction(function (tx) {
-        //     console.log('load');
-        //     tx.executeSql('DROP TABLE DATA', [],
-        //         function () {
-        //             console.log('deleted DATA')
-        //         },
-        //         function () {
-        //             console.error('DATA did not deleted')
-        //         });
-        //     tx.executeSql('CREATE TABLE IF NOT EXIST DATA (point INTEGER, value INTEGER)', [],
-        //         function () {
-        //             console.log('created DATA');
-        //         }, function () {
-        //             console.error('DATA did not created')
-        //         });
-        // })
+        else {
+            Data.Request.interactionToCache(start, duration, f);
+        }
     },
 
     // обработка полученных данных для дальнейшего использования
@@ -59,6 +39,8 @@ var Data = {
         });
 
         Data.Cache.save(arrayX, arrayY);
+        Data.WebSQL.save(arrayX, arrayY);
+
 
         f({
             x: x,
@@ -119,6 +101,20 @@ var Data = {
                 x: arrayX,
                 y: arrayY
             };
+        },
+
+        interactionToCache: function (start, duration, f) {
+            if (Data.Cache.containsInterval(start, duration)) {
+                console.log('cache');
+                f(Data.Cache.getInterval(start, duration), start);
+            }
+            else {
+                Data.Request.getData('data.csv').then(function (response) {
+                    console.log('request');
+                    Data.processData(response, start, duration, f);
+                    //console.log(Data.Cache.Data.x.length);
+                });
+            }
         }
     },
 
@@ -322,72 +318,98 @@ var Data = {
     //пространство для работы с WebSQL - DataBase;
     WebSQL: {
 
-        MEMORY: 5242880,
+        // память базы данных
+        MEMORY: 5 * 1024 * 1024,
 
-        db: null,
+        // база данных
+        dataBase: null,
 
-        //tx.executeSql('DROP TABLE POINTS');
-        //tx.executeSql("CREATE TABLE IF NOT EXISTS POINTS (point INTEGER, value INTEGER)", [], null, function (tx, error) {
-        //console.log(error);});
+        //создает базу данных или подключается к существующей
+        intiDataBase: function () {
+            return new Promise(function (resolve, reject) {
+                if (Data.WebSQL.dataBase === null) {
+                    Data.WebSQL.dataBase = openDatabase("Points", "", "Points", this.MEMORY);
+                    if (Data.WebSQL.dataBase === null) {
+                        console.error("Failed to connect!");
+                    }
+                    // + создаем таблицу с данными
+                    resolve(); //Data.WebSQL.connectToDB();
+                }
+            });
+        },
 
-        //
+        //подключение к базе данных
         connectToDB: function () {
-            if (Data.WebSQL.db.version !== '0.1.') {
-                this.db.changeVersion(this.db.version, '0.1.', function (tx) {
-                    console.log('Connection completed');
-                    console.log('version : "' + Data.WebSQL.db.version + '"');
-                    Data.WebSQL.db.transaction(function (tx) {
-                        console.log('load');
-                        tx.executeSql('DROP TABLE DATA', [],
-                            function () {
-                                console.log('deleted DATA')
-                            },
-                            function () {
-                                console.error('DATA did not deleted')
-                            });
-                        tx.executeSql('CREATE TABLE IF NOT EXIST DATA (point INTEGER, value INTEGER)', [],
-                            function () {
-                                console.log('created DATA');
-                            }, function () {
-                                console.error('DATA did not created')
-                            });
-                    })
-                });
-            }
-            else {
-                console.log('Already exist!');
-                console.log('version : "' + Data.WebSQL.db.version + '"');
-                this.copyToCache();
-            }
-        },
+            return new Promise(function (resolve, reject) {
+                if (Data.WebSQL.dataBase.version !== '0.1') {
+                    Data.WebSQL.dataBase.changeVersion(Data.WebSQL.dataBase.version, '0.1', function (tx) {
+                        console.log('Connection completed');
+                        console.log('version : "' + Data.WebSQL.dataBase.version + '"');
+                        Data.WebSQL.dataBase.transaction(function (tx) {
+                            tx.executeSql('DROP TABLE IF EXISTS DATA', [],
+                                function () {
+                                    tx.executeSql('CREATE TABLE IF NOT EXISTS DATA (point INTEGER, value INTEGER)', [],
+                                        function () {
+                                        }, function () {
+                                            console.error('DATA did not created');
+                                        });
+                                },
+                                function () {
+                                    console.error('DATA did not deleted');
+                                });
 
-        copyToCache: function () {
-            this.db.transaction(function (tx) {
-                var tmp = [];
-                tx.executeSql('SELECT distinct point, value FROM DATA', [],
-                    function (tx, result) {
-                        var l = result.rows.length;
-                        for (var i = 0; i < l; i++) {
-                            tmp[i] = {x: result.rows.item(i).point, y: result.rows.item(i).value};
-                        }
-                        tmp.sort(function (a, b) {
-                            return a.x - b.x;
-                        });
-                        // сохранение в кеш
-                        for (i = 0; i < l; i++) {
-                            Data.Cache.Data.x[i] = tmp[i].x;
-                            Data.Cache.Data.y[i] = tmp[i].y;
-                        }
-                        console.log(Data.Cache.Data);
-                    },
-                    function (tx, error) {
-                        console.error(error);
+                        })
                     });
-            })
+                }
+                else {
+                    console.log('Already exist!');
+                    console.log('version : "' + Data.WebSQL.dataBase.version + '"');
+                    resolve(); //this.copyToCache()
+
+                }
+            });
         },
 
-        saveToDB: function () {
+        // копирует данные из БД в кеш
+        copyToCache: function () {
+            return new Promise(function (resolve, reject) {
+                Data.WebSQL.dataBase.transaction(function (tx) {
+                    var tmp = [];
+                    tx.executeSql('SELECT distinct point, value FROM DATA', [],
+                        function (tx, result) {
+                            var l = result.rows.length;
+                            for (var i = 0; i < l; i++) {
+                                tmp[i] = {x: result.rows.item(i).point, y: result.rows.item(i).value};
+                            }
+                            tmp.sort(function (a, b) {
+                                return a.x - b.x;
+                            });
+                            // сохранение в кеш
+                            for (i = 0; i < l; i++) {
+                                Data.Cache.Data.x[i] = tmp[i].x;
+                                Data.Cache.Data.y[i] = tmp[i].y;
+                            }
+                            console.log(Data.Cache.Data);
+                            resolve(); // Data.Request.interactionToCache(start, duration, f))
+                        },
+                        function (tx, error) {
+                            console.error(error);
+                        });
+                });
+            });
+        },
 
+        //функция сохранения в базу данных
+        save: function (X, Y) {
+            var l = X.length;
+            Data.WebSQL.dataBase.transaction(function (tx) {
+                for (var i = 0; i < l; i++) {
+                    tx.executeSql('INSERT INTO DATA (point, value) VALUES (?, ?)', [X[i], Y[i]], null,
+                        function () {
+                            console.error('Cant save points!');
+                        });
+                }
+            });
         }
     }
 };
