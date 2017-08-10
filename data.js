@@ -116,7 +116,7 @@ var Data = {
             else {
                 Data.Request.getData('data.csv').then(function (response) {
                     //console.log('4 - запрос на сервер, если не нашло нужные данные');
-                    console.log('request');
+                    //console.log('request');
                     Data.processData(response, start, duration, f);
                     //console.log(Data.Cache.Data.x.length);
                 });
@@ -349,8 +349,8 @@ var Data = {
         createTable: function () {
             //console.log('2 - создание таблицы');
             return new Promise(function (resolve, reject) {
-                if (Data.WebSQL.dataBase.version !== '1') {
-                    Data.WebSQL.dataBase.changeVersion(Data.WebSQL.dataBase.version, '1', function (tx) {
+                if (Data.WebSQL.dataBase.version !== '1.0') {
+                    Data.WebSQL.dataBase.changeVersion(Data.WebSQL.dataBase.version, '1.0', function (tx) {
                         //console.log('Connection completed');
                         //console.log('version : "' + Data.WebSQL.dataBase.version + '"');
                         Data.WebSQL.dataBase.transaction(function (tx) {
