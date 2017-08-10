@@ -1,28 +1,40 @@
 var Data = {
 
-    points_X: [],
-
     // подгрузка данных
     getDataFor: function (start, duration, f) {
+        //копировать все что есть в БД в кеш
+        //проверяем наличие нужного отрезка в кеше
+        //если есть то берем из кеша,
+        // если нету то AJAX:
+        //сохраняем эти данные в кеш и в БД
 
-        Data.WebSQL.db = openDatabase("Points", "", "Points", 5 * 1024 * 1024);
-        if (!Data.WebSQL.db) {
-            alert("Failed to connect to database.");
+        //проверяем наличие БД и создали ее если неду доступной версии
+        if (Data.WebSQL.db === null) {
+            Data.WebSQL.db = openDatabase("Points", "", "Points", this.MEMORY);
+            if (Data.WebSQL.db === null) {
+                console.error("Failed to connect!");
+            }
+            // + создаем таблицу с данными
+            Data.WebSQL.connectToDB();
         }
 
-        Data.WebSQL.copyToCache();
-
-        if (Data.Cache.containsInterval(start, duration)) {
-            console.log('cache');
-            f(Data.Cache.getInterval(start, duration), start);
-        }
-        else {
-            Data.Request.getData('data.csv').then(function (response) {
-                console.log('request');
-                Data.processData(response, start, duration, f);
-                console.log(Data.Cache.Data.x.length);
-            });
-        }
+        // var dbS = openDatabase("NEW", "", "Points", this.MEMORY);
+        // dbS.transaction(function (tx) {
+        //     console.log('load');
+        //     tx.executeSql('DROP TABLE DATA', [],
+        //         function () {
+        //             console.log('deleted DATA')
+        //         },
+        //         function () {
+        //             console.error('DATA did not deleted')
+        //         });
+        //     tx.executeSql('CREATE TABLE IF NOT EXIST DATA (point INTEGER, value INTEGER)', [],
+        //         function () {
+        //             console.log('created DATA');
+        //         }, function () {
+        //             console.error('DATA did not created')
+        //         });
+        // })
     },
 
     // обработка полученных данных для дальнейшего использования
@@ -31,9 +43,6 @@ var Data = {
             arrayY = [],
             end = start + duration,
             l = data.x.length;
-
-        Data.points_X = data.x;
-        console.log(Data.points_X.length);
 
         for (var i = 0; i < l; i++) {
             if (data.x[i] >= start && data.x[i] <= end) {
@@ -50,7 +59,6 @@ var Data = {
         });
 
         Data.Cache.save(arrayX, arrayY);
-        Data.WebSQL.connectToDB(arrayX, arrayY);
 
         f({
             x: x,
@@ -311,79 +319,75 @@ var Data = {
         }
     },
 
+    //пространство для работы с WebSQL - DataBase;
     WebSQL: {
+
+        MEMORY: 5242880,
 
         db: null,
 
-        //проверка на подключение к базе данных  сохранение информации
-        connectToDB: function (X, Y) {
-            if (this.db.version !== "1") {
-                this.db.changeVersion(this.db.version, "1", function (tx) {
-                    tx.executeSql('DROP TABLE POINTS');
-                    tx.executeSql("CREATE TABLE IF NOT EXISTS POINTS (point INTEGER, value INTEGER)", [], null, function (tx, error) {
-                        console.log(error);
-                    });
-                    Data.WebSQL.saveToDB(X, Y);
-                }, null, null);
+        //tx.executeSql('DROP TABLE POINTS');
+        //tx.executeSql("CREATE TABLE IF NOT EXISTS POINTS (point INTEGER, value INTEGER)", [], null, function (tx, error) {
+        //console.log(error);});
+
+        //
+        connectToDB: function () {
+            if (Data.WebSQL.db.version !== '0.1.') {
+                this.db.changeVersion(this.db.version, '0.1.', function (tx) {
+                    console.log('Connection completed');
+                    console.log('version : "' + Data.WebSQL.db.version + '"');
+                    Data.WebSQL.db.transaction(function (tx) {
+                        console.log('load');
+                        tx.executeSql('DROP TABLE DATA', [],
+                            function () {
+                                console.log('deleted DATA')
+                            },
+                            function () {
+                                console.error('DATA did not deleted')
+                            });
+                        tx.executeSql('CREATE TABLE IF NOT EXIST DATA (point INTEGER, value INTEGER)', [],
+                            function () {
+                                console.log('created DATA');
+                            }, function () {
+                                console.error('DATA did not created')
+                            });
+                    })
+                });
             }
             else {
-                this.saveToDB(X, Y);
+                console.log('Already exist!');
+                console.log('version : "' + Data.WebSQL.db.version + '"');
+                this.copyToCache();
             }
-        },
-
-        saveToDB: function (X, Y) {
-            var len = X.length;
-            this.db.transaction(function (tx) {
-                for (var i = 0; i < len; i++) {
-                    tx.executeSql("INSERT INTO POINTS (point, value) VALUES (?, ?)", [X[i], Y[i]], null, function (tx, error) {
-                        console.log(error);
-                    });
-                }
-                // tx.executeSql('SELECT * FROM POINTS', [], function (tx, result) {
-                //     var len = result.rows.length;
-                //     for (var i = 0; i < len; i++) {
-                //         console.log(result.rows.item(i).point + ' ' + result.rows.item(i).value);
-                //     }
-                // }, function (tx, error) {
-                //     console.log(error);
-                // });
-            });
         },
 
         copyToCache: function () {
             this.db.transaction(function (tx) {
                 var tmp = [];
-
-                tx.executeSql('SELECT distinct point, value FROM POINTS', [], function (tx, result) {
-                    var len = result.rows.length;
-                    for (var i = 0; i < len; i++) {
-                        //console.log(result.rows.item(i).point + ' ' + result.rows.item(i).value);
-                        // tmp.x[i] = result.rows.item(i).point;
-                        // tmp.y[i] = result.rows.item(i).value;
-
-                        tmp[i] = {x: result.rows.item(i).point, y: result.rows.item(i).value};
-
-                        //нужно отсортировать по возрастанию x!
-                        //потому что из базы они могут попасть не отсортированные
-                        //вопрос в том, как два массива отсортировать параллельно
-                        // Data.Cache.Data.x = tmp.x;
-                        // Data.Cache.Data.y = tmp.y;
-                    }
-                    tmp.sort(function (a, b) {
-                        return a.x - b.x;
+                tx.executeSql('SELECT distinct point, value FROM DATA', [],
+                    function (tx, result) {
+                        var l = result.rows.length;
+                        for (var i = 0; i < l; i++) {
+                            tmp[i] = {x: result.rows.item(i).point, y: result.rows.item(i).value};
+                        }
+                        tmp.sort(function (a, b) {
+                            return a.x - b.x;
+                        });
+                        // сохранение в кеш
+                        for (i = 0; i < l; i++) {
+                            Data.Cache.Data.x[i] = tmp[i].x;
+                            Data.Cache.Data.y[i] = tmp[i].y;
+                        }
+                        console.log(Data.Cache.Data);
+                    },
+                    function (tx, error) {
+                        console.error(error);
                     });
-                    //console.log(tmp);
-                    for (i = 0; i < len; i++) {
-                        Data.Cache.Data.x[i] = tmp[i].x;
-                        Data.Cache.Data.y[i] = tmp[i].y;
-                    }
-                }, function (tx, error) {
-                    console.log(error);
-                });
+            })
+        },
 
-            });
-            //console.log(Data.Cache.Data);
+        saveToDB: function () {
+
         }
-
     }
 };
