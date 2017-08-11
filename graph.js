@@ -1,52 +1,54 @@
 var Graph = {
 
-    WIDTH: 0, //ширина экрана пользователя
+    WIDTH: 0, // ширина экрана пользователя
 
-    HEIGHT: 0, //высота экрана пользователя
+    HEIGHT: 0, // высота экрана пользователя
 
-    ctx: null, //контекст холста
+    canvas: null, // холст
 
-    canvas: null, //холст(невидимый)
+    ctx: null, // контекст холста
 
-    tempCanvas: null, //второй холст
+    tempCanvas: null, // второй холст
 
-    tempCtx: null, //контекст второго холста
+    tempCtx: null, // контекст второго холста
 
-    imageData: null, //изображение холста
+    imageData: null, // изображение холста
 
-    MARGIN: 50, //отступ по краям графика
+    MARGIN: 50, // отступ по краям графика
 
-    OX_MS: 0, //ось ОХ в миллисекундах
+    OX_MS: 0, // ось ОХ в миллисекундах
 
-    OY_MS: 0, //ось OY в значениях
+    OY_MS: 0, // ось OY в значениях
 
-    PX_PER_POINT: 100, //расстояние между двумя соседними точками на осях
+    PX_PER_POINT: 100, // расстояние между двумя соседними точками на осях
 
-    MS_PER_PIXEL: 1000, //масштаб оси ОХ
+    MS_PER_PIXEL: 1000, // масштаб оси ОХ
 
-    UNITS_PER_PIXEL: 10, //масштаб по OY
+    UNITS_PER_PIXEL: 10, // масштаб по OY
 
-    START_UNITS: 0,//9000, //значение в точке 0 по OY
+    START_UNITS: 0,//9000, // значение в точке 0 по OY
 
-    START_MS: 1498029923327,//1500379393330, //значение в точке 0 по OX
+    START_MS: 1498050000000,//1498029923327,//1500379393330, // значение в точке 0 по OX
 
-    INIT_MS_PER_PIXEL: 1000, //фиксированный масштаб по ОХ
+    INIT_MS_PER_PIXEL: 1000, // фиксированный масштаб по ОХ
 
-    INIT_UNIT_PER_PIXEL: 10, //фиксированный масштаб по OY
+    INIT_UNIT_PER_PIXEL: 10, // фиксированный масштаб по OY
 
-    CurrentZoom: 0, //текущий масштаб [-20, 20]
+    CurrentZoom: 0, // текущий масштаб [-20, 20]
 
-    SPEED: 4, //скорость скроллинга
+    SPEED: 4, // скорость скроллинга
 
-    mouseFlag: false, //индикатор нажатия ЛКМ
+    mouseFlag: false, // индикатор нажатия ЛКМ
 
-    cursorPositionX: 0, //положение курсора по X
+    cursorPositionX: 0, // положение курсора по X
 
-    cursorPositionY: 0, //положение курсора по Y
+    cursorPositionY: 0, // положение курсора по Y
 
-    shiftX: 0, //сдвиг по ОХ
+    shiftX: 0, // сдвиг по ОХ
 
-    shiftY: 0, //сдвиг по OY
+    shiftY: 0, // сдвиг по OY
+
+    LAST_MS_POINT: 0, // крайняя правая точка
 
     init: function () {
         Graph.tempCanvas = document.createElement('canvas');
@@ -78,6 +80,7 @@ var Graph = {
         Graph.canvas.width = Graph.WIDTH;
         Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
         Graph.OY_MS = (Graph.HEIGHT - 2 * Graph.MARGIN) * Graph.UNITS_PER_PIXEL;
+        Graph.START_MS = 1498050000000 - Graph.OX_MS + Graph.OX_MS * 0.1;
     },
 
     //рендеровка графика(очистка всего поля и отрисовка заного)
@@ -226,7 +229,7 @@ var Graph = {
 
     //функция для обрабочика событий при нажатии на ЛКМ
     onDown: function (e) {
-        if(e.type === 'mousedown') {
+        if (e.type === 'mousedown') {
             if ((e.clientX - Graph.MARGIN) > 0 && (e.clientX - Graph.MARGIN) < Graph.WIDTH - 2 * Graph.MARGIN && Graph.realY(e.clientY) > 0 && Graph.realY(e.clientY) < Graph.HEIGHT - 2 * Graph.MARGIN) {
                 Graph.mouseFlag = true;
                 //console.log('туда');
@@ -234,7 +237,7 @@ var Graph = {
                 Graph.cursorPositionY = Graph.realY(e.clientY);
             }
         }
-        else if(e.type === 'touchstart'){
+        else if (e.type === 'touchstart') {
             if ((e.touches[0].clientX - Graph.MARGIN) > 0 && (e.touches[0].clientX - Graph.MARGIN) < Graph.WIDTH - 2 * Graph.MARGIN && Graph.realY(e.touches[0].clientY) > 0 && Graph.realY(e.touches[0].clientY) < Graph.HEIGHT - 2 * Graph.MARGIN) {
                 Graph.mouseFlag = true;
                 //console.log('туда');
@@ -246,12 +249,12 @@ var Graph = {
 
     //функция для обработчика событий при отпускании ЛКМ
     onUp: function (e) {
-        if(e.type === 'mouseup') {
+        if (e.type === 'mouseup') {
             Graph.mouseFlag = false;
             Graph.cursorPositionX = e.clientX - Graph.MARGIN;
             Graph.cursorPositionY = Graph.realY(e.clientY);
         }
-        else if(e.type === 'touchend'){
+        else if (e.type === 'touchend') {
             Graph.mouseFlag = false;
         }
     },
@@ -260,16 +263,19 @@ var Graph = {
     onMove: function (e) {
         var xMS = 0,
             yUN = 0;
-        if(e.type === 'mousemove') {
+        if (e.type === 'mousemove') {
             if (Graph.mouseFlag) {
                 //console.log('x: ' + (e.clientX - Graph.MARGIN) + 'y: ' + Graph.realY(e.clientY));
                 xMS = (e.clientX - Graph.MARGIN);
                 yUN = Graph.realY(e.clientY);
                 //console.log(x,y);
+                if (Graph.LAST_MS_POINT + Graph.START_MS > Graph.OX_MS - 0.20 * Graph.OX_MS + Graph.START_MS) {
+                    //Graph.dragGraph(xMS, yUN);
+                }
                 Graph.dragGraph(xMS, yUN);
             }
         }
-        else if(e.type === 'touchmove'){
+        else if (e.type === 'touchmove') {
             if (Graph.mouseFlag) {
                 //console.log('x: ' + (e.clientX - Graph.MARGIN) + 'y: ' + Graph.realY(e.clientY));
                 xMS = (e.touches[0].clientX - Graph.MARGIN);

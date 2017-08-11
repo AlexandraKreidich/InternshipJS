@@ -36,6 +36,15 @@ var Data = {
         var x = new Int32Array(arrayX),
             y = new Int32Array(arrayY);
 
+        if(arrayX[arrayX.length - 1] > Graph.LAST_MS_POINT){
+            Graph.LAST_MS_POINT = arrayX[arrayX.length - 1]
+        }
+
+        if(Data.binar(Graph.LAST_MS_POINT, arrayX)){
+            console.log('here');
+        }
+
+
         arrayX = arrayX.map(function (e) {
             return e + start;
         });
@@ -351,13 +360,14 @@ var Data = {
             return new Promise(function (resolve, reject) {
                 if (Data.WebSQL.dataBase.version !== '1.0') {
                     Data.WebSQL.dataBase.changeVersion(Data.WebSQL.dataBase.version, '1.0', function (tx) {
-                        //console.log('Connection completed');
-                        //console.log('version : "' + Data.WebSQL.dataBase.version + '"');
+                        // console.log('Connection completed');
+                        // console.log('version : "' + Data.WebSQL.dataBase.version + '"');
                         Data.WebSQL.dataBase.transaction(function (tx) {
                             tx.executeSql('DROP TABLE IF EXISTS DATA', [],
                                 function () {
                                     tx.executeSql('CREATE TABLE IF NOT EXISTS DATA (point INTEGER, value INTEGER)', [],
                                         function () {
+                                            resolve();
                                         }, function () {
                                             console.error('DATA did not created');
                                         });
@@ -420,5 +430,32 @@ var Data = {
                 }
             });
         }
+    },
+    binar: function (point, mas) {
+
+        var start = 0,
+            end = mas.length - 1,
+            mid = Math.floor((start + end) / 2),
+            i = 0;
+
+        while (start < end) {
+            i++;
+            if (i > 200) {
+                return -2;
+            }
+
+            if (mas[mid] > point) {
+                end = mid;
+            }
+            else if (mas[mid] < point) {
+                start = mid + 1;
+            }
+            else if (mas[mid] === point) {
+                return true;
+            }
+
+            mid = Math.floor((start + end) / 2);
+        }
+        return -1;
     }
 };
