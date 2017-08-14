@@ -36,18 +36,13 @@ var Data = {
         var x = new Int32Array(arrayX),
             y = new Int32Array(arrayY);
 
-        if(arrayX[arrayX.length - 1] > Graph.LAST_MS_POINT){
-            Graph.LAST_MS_POINT = arrayX[arrayX.length - 1]
-        }
-
-        if(Data.binar(Graph.LAST_MS_POINT, arrayX)){
-            console.log('here');
-        }
-
-
         arrayX = arrayX.map(function (e) {
             return e + start;
         });
+
+        if(Graph.LAST_MS === 0){
+            Graph.LAST_MS = arrayX[arrayX.length - 1];
+        }
 
         Data.Cache.save(arrayX, arrayY);
         Data.WebSQL.save(arrayX, arrayY);
@@ -183,6 +178,10 @@ var Data = {
 
             var x = new Int32Array(arrayX),
                 y = new Int32Array(arrayY);
+
+            arrayX = arrayX.map(function (e) {
+                return e + start;
+            });
 
             return {
                 x: x,
@@ -438,24 +437,23 @@ var Data = {
             mid = Math.floor((start + end) / 2),
             i = 0;
 
-        while (start < end) {
+        while (start <= end) {
             i++;
             if (i > 200) {
                 return -2;
             }
 
-            if (mas[mid] > point) {
+            if (mas[mid] === point) {
+                return true;
+            }
+            else if (mas[mid] > point) {
                 end = mid;
             }
             else if (mas[mid] < point) {
                 start = mid + 1;
             }
-            else if (mas[mid] === point) {
-                return true;
-            }
-
             mid = Math.floor((start + end) / 2);
         }
-        return -1;
+        return false;
     }
 };

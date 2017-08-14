@@ -1,59 +1,62 @@
 var Graph = {
 
-    WIDTH: 0, // ширина экрана пользователя
+    WIDTH: 0, //ширина экрана пользователя
 
-    HEIGHT: 0, // высота экрана пользователя
+    HEIGHT: 0, //высота экрана пользователя
 
-    canvas: null, // холст
+    ctx: null, //контекст холста
 
-    ctx: null, // контекст холста
+    canvas: null, //холст(невидимый)
 
-    tempCanvas: null, // второй холст
+    tempCanvas: null, //второй холст
 
-    tempCtx: null, // контекст второго холста
+    tempCtx: null, //контекст второго холста
 
-    imageData: null, // изображение холста
+    imageData: null, //изображение холста
 
-    MARGIN: 50, // отступ по краям графика
+    MARGIN: 50, //отступ по краям графика
 
-    OX_MS: 0, // ось ОХ в миллисекундах
+    OX_MS: 0, //ось ОХ в миллисекундах
 
-    OY_MS: 0, // ось OY в значениях
+    OY_MS: 0, //ось OY в значениях
 
-    PX_PER_POINT: 100, // расстояние между двумя соседними точками на осях
+    PX_PER_POINT: 100, //расстояние между двумя соседними точками на осях
 
-    MS_PER_PIXEL: 1000, // масштаб оси ОХ
+    MS_PER_PIXEL: 1000, //масштаб оси ОХ
 
-    UNITS_PER_PIXEL: 10, // масштаб по OY
+    UNITS_PER_PIXEL: 10, //масштаб по OY
 
-    START_UNITS: 0,//9000, // значение в точке 0 по OY
+    START_UNITS: 0,//9000, //значение в точке 0 по OY
 
-    START_MS: 1498050000000,//1498029923327,//1500379393330, // значение в точке 0 по OX
+    START_MS: 0,//1498049833680,//1498029923327,//1500379393330, //значение в точке 0 по OX
 
-    INIT_MS_PER_PIXEL: 1000, // фиксированный масштаб по ОХ
+    LAST_MS: 0, // крайняя точка графика
 
-    INIT_UNIT_PER_PIXEL: 10, // фиксированный масштаб по OY
+    threshold: 0.2, // процент границы крайней точки графика
 
-    CurrentZoom: 0, // текущий масштаб [-20, 20]
+    INIT_MS_PER_PIXEL: 1000, //фиксированный масштаб по ОХ
 
-    SPEED: 4, // скорость скроллинга
+    INIT_UNIT_PER_PIXEL: 10, //фиксированный масштаб по OY
 
-    mouseFlag: false, // индикатор нажатия ЛКМ
+    CurrentZoom: 0, //текущий масштаб [-20, 20]
 
-    cursorPositionX: 0, // положение курсора по X
+    SPEED: 4, //скорость скроллинга
 
-    cursorPositionY: 0, // положение курсора по Y
+    mouseFlag: false, //индикатор нажатия ЛКМ
 
-    shiftX: 0, // сдвиг по ОХ
+    cursorPositionX: 0, //положение курсора по X
 
-    shiftY: 0, // сдвиг по OY
+    cursorPositionY: 0, //положение курсора по Y
 
-    LAST_MS_POINT: 0, // крайняя правая точка
+    shiftX: 0, //сдвиг по ОХ
+
+    shiftY: 0, //сдвиг по OY
 
     init: function () {
         Graph.tempCanvas = document.createElement('canvas');
         Graph.canvas = document.getElementsByTagName('canvas')[0];
         Graph.getDimensions();
+        Graph.START_MS = 1498049960000 - Graph.OX_MS + Graph.threshold * Graph.OX_MS;
         Graph.tempCtx = Graph.tempCanvas.getContext('2d');
         Graph.ctx = Graph.canvas.getContext('2d');
         Graph.render();
@@ -80,7 +83,6 @@ var Graph = {
         Graph.canvas.width = Graph.WIDTH;
         Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
         Graph.OY_MS = (Graph.HEIGHT - 2 * Graph.MARGIN) * Graph.UNITS_PER_PIXEL;
-        Graph.START_MS = 1498050000000 - Graph.OX_MS + Graph.OX_MS * 0.1;
     },
 
     //рендеровка графика(очистка всего поля и отрисовка заного)
@@ -103,13 +105,19 @@ var Graph = {
             up = 38,
             right = 39,
             down = 40,
-            speed = Graph.SPEED;
+            speed = Graph.SPEED,
+            tmpX = 0;
         switch (e.keyCode) {
             case left :
+                tmpX = (Graph.LAST_MS - Graph.START_MS) / Graph.MS_PER_PIXEL;
                 Graph.START_MS -= speed * Graph.MS_PER_PIXEL;
                 Graph.render();
                 break;
             case right :
+                tmpX = (Graph.LAST_MS - Graph.START_MS) / Graph.MS_PER_PIXEL;
+                if (tmpX < (Graph.OX_MS - Graph.threshold * Graph.OX_MS) / Graph.MS_PER_PIXEL) {
+                    break;
+                }
                 Graph.START_MS += speed * Graph.MS_PER_PIXEL;
                 Graph.render();
                 break;
@@ -160,17 +168,20 @@ var Graph = {
     //функция увеличения масштаба графика
     zoomIn: function (e, power, PPP, stepPPP, flag) {
         var maxZoom = 20, //максимальный зум
-            maxPPP = 150; //максимальная величина PIXEL_PER_POINT
+            maxPPP = 150, //максимальная величина PIXEL_PER_POINT
+            tmpX = (Graph.LAST_MS - Graph.START_MS);
         if (flag) {
             Graph.CurrentZoom = (Graph.CurrentZoom < maxZoom) ? Graph.CurrentZoom + 1 : Graph.CurrentZoom;
-
             var aX = e.clientX - Graph.MARGIN, //длинна от нуля до курсора по ОХ
                 aY = Graph.realY(e.clientY), //длинна от нуля до курсора по OY
                 cX = Graph.START_MS + aX * Graph.MS_PER_PIXEL, //координата курсора по ОХ
-                cY = Graph.START_UNITS + aY * Graph.UNITS_PER_PIXEL, //координата курсора по OY
-                ratioX = aX / (Graph.WIDTH - 2 * Graph.MARGIN), //отношение аХ к длинне оси ОХ
+                cY = Graph.START_UNITS + aY * Graph.UNITS_PER_PIXEL; //координата курсора по OY
+            // if (tmpX < (Graph.OX_MS - 0.01 * Graph.OX_MS)) {
+            //     aX = tmpX/Graph.MS_PER_PIXEL;
+            //     cX = tmpX;
+            // }
+            var ratioX = aX / (Graph.WIDTH - 2 * Graph.MARGIN), //отношение аХ к длинне оси ОХ
                 ratioY = aY / (Graph.HEIGHT - 2 * Graph.MARGIN); //отношение аY к длинне OY
-
             Graph.MS_PER_PIXEL = Graph.INIT_MS_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom);
             Graph.UNITS_PER_PIXEL = Math.floor(Graph.INIT_UNIT_PER_PIXEL * Math.pow(power, -Graph.CurrentZoom));
             Graph.OX_MS = (Graph.WIDTH - 2 * Graph.MARGIN) * Graph.MS_PER_PIXEL;
@@ -269,9 +280,6 @@ var Graph = {
                 xMS = (e.clientX - Graph.MARGIN);
                 yUN = Graph.realY(e.clientY);
                 //console.log(x,y);
-                if (Graph.LAST_MS_POINT + Graph.START_MS > Graph.OX_MS - 0.20 * Graph.OX_MS + Graph.START_MS) {
-                    //Graph.dragGraph(xMS, yUN);
-                }
                 Graph.dragGraph(xMS, yUN);
             }
         }
@@ -288,21 +296,25 @@ var Graph = {
 
     //передвижение графика
     dragGraph: function (x, y) {
-
-        //console.log(Graph.cursorPositionX - x, Graph.cursorPositionY - y, x, y);
-        Graph.shiftX += Math.abs(Graph.cursorPositionX - x);
-        Graph.shiftY += Math.abs(Graph.cursorPositionY - y);
-        //console.log(Graph.shiftX,Graph.shiftY);
-        if (Graph.shiftX > 10 && Graph.shiftY > 10) {
-            Graph.START_MS += (Graph.cursorPositionX - x) * Graph.MS_PER_PIXEL;
-            Graph.START_UNITS += (Graph.cursorPositionY - y) * Graph.UNITS_PER_PIXEL;
-            Graph.cursorPositionX = x;
-            Graph.cursorPositionY = y;
-            Graph.render();
-            Graph.shiftX = 0;
-            Graph.shiftY = 0;
+        ///console.log(Graph.cursorPositionX - x, Graph.cursorPositionY - y, x, y);
+        var tmpX = (Graph.LAST_MS - Graph.START_MS) / Graph.MS_PER_PIXEL;
+        if (tmpX < (Graph.OX_MS - Graph.threshold * Graph.OX_MS) / Graph.MS_PER_PIXEL && Graph.cursorPositionX - x > 0) {
+            //console.log('xui');
         }
-
+        else {
+            Graph.shiftX += Math.abs(Graph.cursorPositionX - x);
+            Graph.shiftY += Math.abs(Graph.cursorPositionY - y);
+            //console.log(Graph.shiftX,Graph.shiftY);
+            if (Graph.shiftX > 10 && Graph.shiftY > 10) {
+                Graph.START_MS += (Graph.cursorPositionX - x) * Graph.MS_PER_PIXEL;
+                Graph.START_UNITS += (Graph.cursorPositionY - y) * Graph.UNITS_PER_PIXEL;
+                Graph.cursorPositionX = x;
+                Graph.cursorPositionY = y;
+                Graph.render();
+                Graph.shiftX = 0;
+                Graph.shiftY = 0;
+            }
+        }
     },
 
     //заливает весь холст черным
@@ -337,7 +349,7 @@ var Graph = {
         ctx.strokeStyle = '#ff0efc';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        //console.log("start");
+        //console.log("start", d.x[0], Graph.tsToX(d.x[0]));
         ctx.moveTo(Graph.tsToX(d.x[0]), Graph.unitsToY(d.y[0] - Graph.START_UNITS));
         for (var i = 1; i < l; i++) {
             //console.log("go");
@@ -350,7 +362,6 @@ var Graph = {
         Graph.drawAxes();
         Graph.drawGrid();
         Graph.drawMarks();
-
     },
 
     //отрисовка меток времени и значений
